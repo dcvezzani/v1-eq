@@ -1,0 +1,3 @@
+echo "... Sending text: $lastname $phone"
+osascript "$HOME/scripts/send.scpt" +1"$phone" "$msg"
+

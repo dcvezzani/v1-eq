@@ -25,6 +25,8 @@ export default {
       console.log('socket-in:joined:', msg);
     },
 	},
+	mounted () {
+	},
 }
 </script>
 
