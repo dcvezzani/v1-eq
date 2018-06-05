@@ -69,11 +69,14 @@ router.get('/', function(req, res, next) {
 		},
 		(cb) => {
 			fetchRsDetails(data.jsonIndex, (err, memberDetails) => {
-				console.log("trace 02");
 				if (err) return cb(err);
-				console.log("trace 03");
 				data.rsDetails = memberDetails;
 				cb();
+			});
+		},
+		(cb) => {
+			persistToDatabase(data, (err) => {
+				cb(err);
 			});
 		},
 	];
@@ -83,8 +86,10 @@ router.get('/', function(req, res, next) {
 				console.log("err", err);
 				return res.json({status: 'error', msg: 'something went wrong', err});
 			}
-			console.log("eq details keys", Object.keys(data.eqDetails));
-			console.log("rs details keys", Object.keys(data.rsDetails));
+			// console.log("eq details keys", Object.keys(data.eqDetails[0].members.length));
+			// console.log("rs details keys", Object.keys(data.rsDetails[0].members.length));
+			console.log("eq details keys", data.eqDetails[0].members.length);
+			console.log("rs details keys", data.rsDetails[0].members.length);
 			console.log("members count", data.memberDetails.length);
 		
 			// formatting bday string
@@ -95,6 +100,12 @@ router.get('/', function(req, res, next) {
 			res.json(data);
 	});
 });
+
+const persistToDatabase = (data, callback) => {
+	const allAdults = [...(data.eqDetails[0].members), ...(data.rsDetails[0].members)];
+	console.log("all adults", allAdults.length);
+	callback();
+}
 
 const parseDirListing = (json, callback) => {
 	let jsonIndex = null;
