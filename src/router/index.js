@@ -3,6 +3,8 @@ import Router from 'vue-router'
 import HelloWorld from '@/components/HelloWorld'
 import VisitAppointments from '@/components/VisitAppointments'
 import FormatVisitRequest from '@/components/FormatVisitRequest'
+import ListMembers from '@/components/ListMembers'
+import ListRoles from '@/components/ListRoles'
 
 Vue.use(Router)
 
@@ -12,6 +14,16 @@ export default new Router({
       path: '/VisitAppointments',
       name: 'VisitAppointments',
       component: VisitAppointments
+    }, 
+    {
+      path: '/ListMembers',
+      name: 'ListMembers',
+      component: ListMembers
+    }, 
+    {
+      path: '/ListRoles',
+      name: 'ListRoles',
+      component: ListRoles
     }, 
     {
       path: '/',

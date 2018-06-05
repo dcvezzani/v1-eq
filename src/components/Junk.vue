@@ -84,9 +84,11 @@
 </template>
 
 <script>
+import ListRoles from '@/components/ListRoles';
+import ListMembers from '@/components/ListMembers';
 import FormatVisitRequest from '@/components/FormatVisitRequest';
 export default {
-  components: { FormatVisitRequest,},
+  components: { ListRoles, ListMembers, FormatVisitRequest,},
   name: 'HelloWorld',
   data () {
     return {

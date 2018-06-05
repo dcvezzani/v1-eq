@@ -2,12 +2,11 @@
   <div id="app">
     <!-- img src="./assets/logo.png" -->
 
-		<!--
     <div class="router-links">
-      <router-link to="/">StockMan</router-link> |
-      <router-link to="/details">PhotoDetails</router-link>
+      <router-link to="/">FormatVisitRequest</router-link> |
+      <router-link to="/ListMembers">ListMembers</router-link> |
+      <router-link to="/ListRoles">ListRoles</router-link>
     </div>
-		-->
 
     <router-view/>
   </div>

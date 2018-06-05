@@ -16,3 +16,5 @@ yarn-error.log*
 .*.sw*
 .sw*
 be/data/
+
+be/dev.sqlite3

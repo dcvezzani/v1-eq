@@ -1,0 +1,30 @@
+
+exports.up = function(knex, Promise) {
+
+	return knex.schema.createTable('visitors', (table) => {
+    table.increments('id').unsigned().primary()
+
+		// foreign keys
+    table.integer('member_id').unsigned(); // members
+
+		// strings
+    table.string('initials')
+
+		// booleans
+    table.boolean('isEqPresidencyMember')
+
+		// integers
+    // table.integer('actualAge')
+
+		// timestamps
+		table.timestamp('created_at').defaultTo(knex.fn.now())
+		table.timestamp('updated_at')
+	})
+	// .then(() => ···)
+	
+};
+
+exports.down = function(knex, Promise) {
+  
+};
+
