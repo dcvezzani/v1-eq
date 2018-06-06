@@ -1,27 +1,45 @@
 <template>
-  <div class="list-members">
-		ListMembers
+  <div class="container list-members">
+		<p>Members</p>
 
-		<Member v-for="member in members" :key="member.id" :attrs="member"></Member>
+		<autocomplete
+			ref="memberName"
+			source="http://localhost:3000/users/?like="
+			placeholder="Type member name"
+			results-property="members"
+			results-display="name"
+			results-value="id"
+			@selected="memberNameSelected"
+			@input="memberNameInput"
+			@clear="clearMemberName"
+			>
+		</autocomplete>
+
+		<!-- Member v-for="member in members" :key="member.id" :attrs="member"></Member -->
+		<MemberFullDetails v-show="member !== null" :data="member"></MemberFullDetails>
   </div>
 </template>
 
 <script>
+import MemberFullDetails from '@/components/MemberFullDetails';
 import Member from '@/components/Member';
 import request from 'request';
 // const USERS_INDEX = 'http://localhost:3000/users/?like=Ahlmann';
 // const USERS_INDEX = 'http://localhost:3000/users/?groups[]=eq&groups[]=rs';
 const USERS_INDEX = 'http://localhost:3000/users/';
+import Autocomplete from 'vuejs-auto-complete'
+import moment from 'moment';
 
 export default {
-  components: { Member,},
+  components: { MemberFullDetails, Member, Autocomplete, },
   name: 'ListMembers',
   props: ['name'],
-  // components: { Member, Junk },
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
 			members: [],
+			member: null,
+			memberId: null,
     }
   },
   computed: {
@@ -31,6 +49,19 @@ export default {
   },
   methods: {
     junk: function() {
+		},
+    memberNameSelected: function(data) {
+			let memberData = data.selectedObject;
+			memberData.address = memberData.address.replace(/<br \/>/, ', ');
+			// memberData.birthDate = moment(memberData.birthDate, 'YYYYMMDD').format("DD MMM YYYY");
+			memberData.birthDate = moment(memberData.birthDate, 'YYYYMMDD').format("DD MMM");
+			this.member = memberData;
+		},
+    memberNameInput: function(id) {
+			this.memberId = id;
+		},
+    clearMemberName: function(id) {
+			this.member = null;
 		},
   },
   sockets:{

@@ -9,7 +9,7 @@ import io from 'socket.io-client';
 require('./assets/sass/main.scss');
 
 import VueSocketio from 'vue-socket.io';
-Vue.use(VueSocketio, io('http://127.0.0.1:3000', { path: '/io-eq-v1'}));
+Vue.use(VueSocketio, io('http://localhost:3000', { path: '/io-eq-v1'}));
 
 window.Event = new Vue();
 
