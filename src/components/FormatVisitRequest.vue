@@ -29,6 +29,7 @@
 <script>
 import messageTemplate from './../message-template.txt';
 import messageTemplateFamiliarFollowup from './../message-template-familiar-followup.txt';
+import messageTemplateBeforeSundayPPI from './../message-template-before-sunday-ppi.txt';
 import textCommandTemplate from './../text-command-template.txt';
 import moment from 'moment';
 
@@ -49,6 +50,7 @@ export default {
 			templates: [
 				{name: 'basic', content: messageTemplate}, 
 				{name: 'familiar-followup', content: messageTemplateFamiliarFollowup}, 
+				{name: 'ppi-before-sunday', content: messageTemplateBeforeSundayPPI}, 
 			],
 			textCommandTemplateVisible: false,
     }
