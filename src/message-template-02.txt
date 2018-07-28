@@ -1,0 +1,15 @@
+Dear $title $lastname, 
+
+This is Bro. David Vezzani from the Vineyard 1st Ward.  I hope that the weekend has been good to you.
+
+I'm reaching out on behalf of Pres. Smith (Elders Quorum president).  As a presidency, we enjoy making visits to get to know members better in the ward and our community.  
+
+Would you be available tomorrow ($visitDate) for such a visit?  
+
+If tomorrow isn't a good time, let me know when you would be more available and we can schedule a better time.
+
+Thanks!
+
+Sincerely,
+
+-- Bro. Vezzani (Elders Quorum Secretary)

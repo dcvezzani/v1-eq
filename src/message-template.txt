@@ -1,4 +1,4 @@
-Dear Bro. $lastname, 
+Dear $title $lastname, 
 
 This is Bro. David Vezzani from the Vineyard 1st Ward.  I hope that you have been enjoying a wonderful week.
 

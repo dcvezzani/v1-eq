@@ -1,0 +1,10 @@
+echo "... Sending email: $lastname $email"
+echo "$msg" | mutt -s "$subject" "$cc" "$email"
+
+if [[ "$?" != "0" ]]; then
+  echo "It looks like there were issues using mutt to send email."
+  echo "Check https://myaccount.google.com/u/1/lesssecureapps?pageId=none to see if you allow for less secure email clients"
+  open "https://myaccount.google.com/u/1/lesssecureapps?pageId=none"
+  exit 1
+fi
+
