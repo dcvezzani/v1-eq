@@ -18,6 +18,19 @@
       </div>
     </div>
 
+    <div v-if="false" class="columns">
+      <div class="column">
+        <pre class="formattedJson">{{ offices }}</pre>
+      </div>
+      <div class="column">
+        <pre class="formattedJson">{{ members }}</pre>
+      </div>
+    </div>
+
+    <ul>
+      <li v-for="member in members" :key="member.id">{{ member.name }}</li>
+    </ul>
+
   </div>
 </template>
 
@@ -43,7 +56,7 @@ export default {
     junk: function() {
 		},
     fetchMembers: function() {
-			this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand)});
+			this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand), refresh: true});
 		},
   },
   sockets:{
@@ -54,6 +67,7 @@ export default {
     "sendShellCommand:fetchMembers:done": function(data){
 		  console.log('sendShellCommand:fetchMembers:done', data);
       if (data.err) return console.error(data.err);
+      console.log("data.stdout", data.stdout);
       this.members = JSON.parse(data.stdout)[0].members;
       this.offices = JSON.parse(data.stdout)[0].filterOffices;
     },
@@ -63,11 +77,16 @@ export default {
 		  console.log('Members:blah', data);
 			window.Event.$emit('Members:activated', {msg: 'done'});
 		});
+
+		this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand)});
   },
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.formattedJson {
+  text-align: left;
+}
 </style>
 

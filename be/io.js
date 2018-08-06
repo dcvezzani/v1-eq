@@ -8,15 +8,15 @@ const reportError = (client, err, msg) => {
 const V1_CACHE_DIR = '/Users/davidvezzani/clients/v1-eq/be/data';
 
 const outputPath = (type) => {
-  return `#{V1_CACHE_DIR}/v1-eq-${type}-cache.txt`;
+  return `${V1_CACHE_DIR}/v1-eq-${type}-cache.json`;
 }; 
 
 const sendShellCommandWithType = (client, type, data) => {
-  console.log(`sendText: ${JSON.stringify(data)}`);
+  console.log(`${type}: ${JSON.stringify(data).slice(0,200)}...`);
   const label = type.replace(/\w/, c => c.toUpperCase());
   const ioAction = `sendShellCommand:${type}:done`;
 
-  sendShellCommand(data.cmd, outputPath(type), (errRaw, data2) => {
+  sendShellCommand({...data, cachePath: outputPath(type)}, (errRaw, data2) => {
     const { cmd, err, stdout, stderr } = data2;
     let msg = `${label} was activated`
     if (errRaw) msg = `${label} was NOT activated`
