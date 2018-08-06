@@ -27,7 +27,8 @@
 		<input v-model="subject" class="input" type="text" placeholder="Subject: Family visits">
 		<input v-model="cc" class="input" type="text" placeholder="CC: pres@email.com">
 
-		<button @click="generateContent" class="button"> Generate </button>
+		<button @click="generateContent" class="button is-primary"> Generate </button>
+		<button @click="createNotes" class="button"> {{ (notesCreated) ? 'Created!' : 'Create Notes' }} </button>
 
 		<textarea v-model="messageContent" class="textarea" placeholder="Generated message"></textarea>
 		<textarea v-model="textCommand" class="textarea" placeholder="Generated text command"></textarea>
@@ -56,6 +57,7 @@ import messageTemplateBeforeSundayPPI from './../message-template-before-sunday-
 import textCommandTemplate from './../text-command-template.txt';
 import emailCommandTemplate from './../email-command-template.txt';
 import moment from 'moment';
+import { createNotes } from './../fetch';
 
 export default {
   name: 'FormatVisitRequest',
@@ -91,6 +93,7 @@ export default {
 				{name: 'ppi-before-sunday', content: messageTemplateBeforeSundayPPI}, 
 			],
 			textCommandTemplateVisible: false,
+      notesCreated: false,
     }
   },
   computed: {
@@ -117,6 +120,14 @@ export default {
   methods: {
 		showTextCommandTemplate: function() {
 			this.textCommandTemplateVisible = !this.textCommandTemplateVisible;
+		},
+		createNotes: function() {
+      createNotes((err, res) => {
+        const self = this;
+        if (err) return console.error(err);
+        self.notesCreated = true;
+        setTimeout(() => self.notesCreated = false, 2000);
+      });
 		},
 		loadTemplate: function(event, ...args) {
 			const templateName = event.target.selectedOptions[0].label;

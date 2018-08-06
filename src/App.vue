@@ -5,7 +5,8 @@
     <div class="router-links">
       <router-link to="/">FormatVisitRequest</router-link> |
       <router-link to="/ListMembers">ListMembers</router-link> |
-      <router-link to="/ListRoles">ListRoles</router-link>
+      <router-link to="/ListRoles">ListRoles</router-link> |
+      <router-link to="/Members">Members</router-link>
     </div>
 
     <router-view/>

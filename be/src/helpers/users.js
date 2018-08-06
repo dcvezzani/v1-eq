@@ -5,6 +5,7 @@ import fs from 'fs';
 import moment from 'moment';
 import db from './../../db'
 import member from './../models/members'
+import { createFamilyNotes } from '../api/drive';
 
 const V1_DIR_LISTING_URL = "https://www.lds.org/directory/services/web/v3.0/mem/member-list/13730"
 const V1_DIR_MEMBER_DETAILS_URL = "https://www.lds.org/directory/services/web/v3.0/mem/householdProfile/${householdId}?imageSize=MEDIUM"
@@ -39,6 +40,14 @@ export const indexMembers = (req, res, next) => {
 		if (err) return res.json({status: 'error', msg: err.msg, err: err.raw});
 		res.json({ members });
 	});
+};
+
+export const createNotes = (req, res, next) => {
+  createFamilyNotes(req.body, (err, apiRes) => {
+		if (err) return res.json({status: 'error', msg: err.msg, err: err.raw});
+    console.log("apiRes", apiRes);
+		res.json({ apiRes });
+  });
 };
 
 export const getMember = (req, res, next) => {

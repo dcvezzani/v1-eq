@@ -18,3 +18,5 @@ yarn-error.log*
 be/data/
 
 be/dev.sqlite3
+be/token.json
+be/credentials.json
