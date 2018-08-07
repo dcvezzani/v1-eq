@@ -1,5 +1,5 @@
-// var async = require('async');
-// import db from './../../db'
+var moment = require('moment');
+import db from './../../db'
 import Member from './../models/members-02'
 
 export const fetchMemberSyncReport = (data, callback) => {
@@ -9,15 +9,33 @@ export const fetchMemberSyncReport = (data, callback) => {
     if (err) return callback(err);
 
     const dbIds = rows.map(row => row.id);
-    const ldsIds = JSON.parse(data.stdout)[0].members.map(member => member.id);
+    const ldsData = JSON.parse(data.stdout);
+    const ldsIds = ldsData[0].members.map(member => member.id);
 
     const removedIds = dbIds.filter(item => !ldsIds.includes(item)) || [];
-    const newIds = ldsIds.filter(item => !dbIds.includes(item)) || [];
+    const newRecords = ldsData[0].members.filter(item => !dbIds.includes(item.id)) || [];
 
-    callback(err, {responsePayload: { ...data, removedIds, newIds }});
+    callback(err, {responsePayload: { ...data, removedIds, newRecords }});
   });
 };
 
 export const importMembers = (data, callback) => {
-  callback(null, data);
+  db.batchInsert('members', data.members, 10)
+    .asCallback((err, rows) => {
+			if (err) return callback({msg: 'Unable to import records', raw: err, query: query.toString()});
+      callback(null, rows);
+    });
+};
+
+export const archiveMembers = (data, callback) => {
+  db('members')
+  .whereIn('id', data.removedIds)
+  .update({
+    archived_at: moment().toISOString(),
+  })
+    .asCallback((err, rows) => {
+			if (err) return callback({msg: 'Unable to archive records', raw: err, query: query.toString()});
+      callback(null, rows);
+    });
+
 };

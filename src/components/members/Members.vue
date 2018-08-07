@@ -1,9 +1,9 @@
 <template>
   <div class="members container">
-		Members
 
     <div class="field">
-      <label class="label">Message</label>
+      <label class="label">Manage Members</label>
+      <p class="help is-left">Copy and paste a cURL from Chrome Dev Tools (Network tab) from lds.org (Leader tools > Organizations > EQ)</p>
       <div class="control">
         <textarea v-model="fetchCommand" class="textarea" placeholder="Textarea"></textarea>
       </div>
@@ -12,9 +12,6 @@
     <div class="field is-grouped is-grouped-centered">
       <div class="control">
         <button @click="fetchMembers" class="button is-link">Fetch</button>
-      </div>
-      <div class="control">
-        <button class="button is-text">Cancel</button>
       </div>
     </div>
 
@@ -27,19 +24,19 @@
       </div>
     </div>
 
-    <div class="columns">
+    <div class="columns member-list">
       <div class="column">
         <ul>
           <li v-for="member in members" :key="member.id">{{ member.name }}</li>
         </ul>
       </div>
       <div class="column">
-        <p>{{ newIds.length }} new records <span v-if="newIds.length > 0">| <a @click="importMembers" href="#">Import</a></span></p>
-        <pre class="formattedJson">{{ newIds }}</pre>
+        <p>{{ newRecords.length }} new records <span v-if="newRecords.length > 0">| <a @click="importMembers" href="#">Import</a></span></p>
+        <pre class="formattedJson">{{ newRecords }}</pre>
       </div>
       <div class="column">
         <p>{{ removedIds.length }} removed records <span v-if="removedIds.length > 0">| <a href="#">Archive</a></span></p>
-        <pre class="formaedJson">{{ removedIds }}</pre>
+        <pre class="formattedJson">{{ removedIds }}</pre>
       </div>
     </div>
 
@@ -57,7 +54,7 @@ export default {
       fetchCommand: '',
       members: [],
       offices: [],
-      newIds: [],
+      newRecords: [],
       removedIds: [],
     }
   },
@@ -73,7 +70,7 @@ export default {
 			this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand), refresh: true});
 		},
     importMembers: function() {
-			this.$socket.emit('db:members:import', {members: this.members, offices: this.offices, importIds: this.newIds});
+			this.$socket.emit('db:members:import', {members: this.newRecords, offices: this.offices});
     }
   },
   sockets:{
@@ -90,7 +87,7 @@ export default {
       const parsedData = JSON.parse(data.stdout)[0];
       this.members = parsedData.members;
       this.offices = parsedData.filterOffices;
-      this.newIds = data.newIds || [];
+      this.newRecords = data.newRecords || [];
       this.removedIds = data.removedIds || [];
     },
   },
@@ -107,8 +104,18 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.is-left, 
 .formattedJson {
   text-align: left;
+}
+.member-list {
+  margin-top: 1em;
+  background-color: hsla(218, 11%, 72%, 0.1);
+  border-radius: 3px;
+}
+pre {
+  background-color: hsla(218, 11%, 72%, 0.3);
+  border-radius: 3px;
 }
 </style>
 

@@ -48,10 +48,12 @@ exports.up = function(knex, Promise) {
     table.integer('genderCode')
     table.integer('nameOrder')
     table.integer('unitNumber')
+    table.integer('memberId')
 
 		// timestamps
 		table.timestamp('created_at').defaultTo(knex.fn.now())
 		table.timestamp('updated_at')
+		table.timestamp('archived_at')
 	})
 	// .then(() => ···)
 	
