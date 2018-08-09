@@ -1,6 +1,6 @@
 import socketIo from 'socket.io';
 import { sendShellCommand } from './src/actions/shell';
-import { fetchMemberSyncReport, importMembers } from './src/helpers/members';
+import { fetchMemberSyncReport, importMembers, archiveMembers } from './src/helpers/members';
 
 const reportError = (client, err, msg) => {
 	client.emit('error', err, msg);
@@ -59,6 +59,7 @@ export const io = (server) => {
 		client.on('sendShellCommand:fetchMembers', function(data) { sendShellCommandWithType(client, 'fetchMembers', data, fetchMemberSyncReport); });
 
 		client.on('db:members:import', function(data) { handleAction(client, 'db:members:import:done', data, importMembers); });
+		client.on('db:members:archive', function(data) { handleAction(client, 'db:members:archive:done', data, archiveMembers); });
 	});
 
 };

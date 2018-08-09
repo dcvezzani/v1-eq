@@ -11,7 +11,7 @@ const Member = {
 			callback(err, rows);
 		});
 	},
-	allInWard: (callback) => {
+	allNotArchived: (callback) => {
 		let query = db('members').select().whereNull('archived_at');
 		console.log("query.toString()", query.toString());
 

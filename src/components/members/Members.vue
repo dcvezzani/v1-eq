@@ -24,18 +24,30 @@
       </div>
     </div>
 
+    <autocomplete :source="members" @results="filterList" @close="updateMemberView"></autocomplete>
+
     <div class="columns member-list">
       <div class="column">
-        <ul>
-          <li v-for="member in members" :key="member.id">{{ member.name }}</li>
+        <div class="controls">
+          <a @click="selectAllMembers" href="#">Select All</a> | 
+          <a @click="unselectAllMembers" href="#">Select None</a> 
+        </div>
+
+        <ul v-if="filteredMembers().length > 0">
+          <Member v-for="member in filteredMembers()" :key="member.id" class="is-left" :member="member"></Member>
+        </ul>
+        <ul v-else>
+          <Member v-for="member in members" :key="member.id" class="is-left" :member="member"></Member>
         </ul>
       </div>
       <div class="column">
         <p>{{ newRecords.length }} new records <span v-if="newRecords.length > 0">| <a @click="importMembers" href="#">Import</a></span></p>
+        <p class="import-error">{{ messages.import }}</p>
         <pre class="formattedJson">{{ newRecords }}</pre>
       </div>
       <div class="column">
-        <p>{{ removedIds.length }} removed records <span v-if="removedIds.length > 0">| <a href="#">Archive</a></span></p>
+        <p>{{ removedIds.length }} removed records <span v-if="removedIds.length > 0">| <a @click="archiveMembers" href="#">Archive</a></span></p>
+        <p class="import-error">{{ messages.archive }}</p>
         <pre class="formattedJson">{{ removedIds }}</pre>
       </div>
     </div>
@@ -44,26 +56,41 @@
 </template>
 
 <script>
+import Member from '@/components/members/Member';
+import Autocomplete from 'vuejs-auto-complete'
+
 export default {
   name: 'Members',
   props: ['name'],
-  // components: { Junk },
+  components: { Member, Autocomplete },
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
       fetchCommand: '',
+      filteredMemberIds: [],
+      selectedMemberIds: [],
       members: [],
       offices: [],
       newRecords: [],
       removedIds: [],
+      messages: {
+        import: null,
+        archive: null,
+      },
     }
   },
   computed: {
     stuff: function() {
 			return 'stuff';
 		},
+    // filteredMembers: function() {
+		// 	return this.members.filter(member => this.filteredMemberIds.includes(member.id));
+		// },
   },
   methods: {
+    filteredMembers: function() {
+			return this.members.filter(member => this.filteredMemberIds.includes(member.id));
+		},
     junk: function() {
 		},
     fetchMembers: function() {
@@ -71,7 +98,47 @@ export default {
 		},
     importMembers: function() {
 			this.$socket.emit('db:members:import', {members: this.newRecords, offices: this.offices});
-    }
+    }, 
+    archiveMembers: function() {
+			this.$socket.emit('db:members:archive', {memberIds: this.removedIds});
+    }, 
+    filterList: function(res) {
+      this.filteredMemberIds = res.results.map(member => member.id);
+    }, 
+    selectAllMembers: function() {
+      this.filteredMemberIds.map(memberId => {
+        const member = this.members.filter(member => member.id === memberId)[0];
+        console.log("member", member);
+        member.selected = true;
+
+        if(this.selectedMemberIds.indexOf(memberId) === -1) {
+          this.selectedMemberIds.push(memberId);
+        }
+        
+        return null;
+      });
+      
+			window.Event.$emit('Member:viewUpdate');
+    }, 
+    unselectAllMembers: function() {
+      this.filteredMemberIds.map(memberId => {
+        const member = this.members.filter(member => member.id === memberId)[0];
+        member.selected = false;
+
+        if(this.selectedMemberIds.indexOf(memberId) !== -1) {
+          const memberIdIndex = this.selectedMemberIds.indexOf(memberId);
+          this.selectedMemberIds.splice(memberIdIndex, 1);
+        }
+        
+        return null;
+      });
+
+			window.Event.$emit('Member:viewUpdate');
+    }, 
+    updateMemberView: function() {
+      console.log(">>> showAll");
+      window.Event.$emit('Member:viewUpdate');
+    }, 
   },
   sockets:{
     "Members:blah": function(data){
@@ -79,7 +146,22 @@ export default {
 			this.$socket.emit('Members:blah', {msg: 'bleh'});
     },
     "db:members:import:done": function(data){
+      setTimeout(() => this.messages.import == null, 3000);
+      if (data.err) {
+        this.messages.import = JSON.stringify(data.err);
+      } else {
+        this.messages.import = `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`;
+      }
 		  console.log('db:members:import:done', data);
+    },
+    "db:members:archive:done": function(data){
+      setTimeout(() => this.messages.archive == null, 3000);
+      if (data.err) {
+        this.messages.archive = JSON.stringify(data.err);
+      } else {
+        this.messages.archive = `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`;
+      }
+		  console.log('db:members:archive:done', data);
     },
     "sendShellCommand:fetchMembers:done": function(data){
 		  console.log('sendShellCommand:fetchMembers:done', data);
@@ -118,4 +200,3 @@ pre {
   border-radius: 3px;
 }
 </style>
-

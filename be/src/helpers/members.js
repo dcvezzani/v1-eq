@@ -5,7 +5,7 @@ import Member from './../models/members-02'
 export const fetchMemberSyncReport = (data, callback) => {
   if (data.err) return callback(data.err);
   
-  Member.all((err, rows) => {
+  Member.allNotArchived((err, rows) => {
     if (err) return callback(err);
 
     const dbIds = rows.map(row => row.id);
@@ -22,20 +22,22 @@ export const fetchMemberSyncReport = (data, callback) => {
 export const importMembers = (data, callback) => {
   db.batchInsert('members', data.members, 10)
     .asCallback((err, rows) => {
-			if (err) return callback({msg: 'Unable to import records', raw: err, query: query.toString()});
-      callback(null, rows);
+			if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert'});
+      callback(null, { payload: rows });
     });
 };
 
 export const archiveMembers = (data, callback) => {
-  db('members')
-  .whereIn('id', data.removedIds)
+  console.log(">>> data", data);
+  const query = db('members')
+  .whereIn('id', data.memberIds)
   .update({
     archived_at: moment().toISOString(),
   })
-    .asCallback((err, rows) => {
+
+  query.asCallback((err, rows) => {
 			if (err) return callback({msg: 'Unable to archive records', raw: err, query: query.toString()});
-      callback(null, rows);
+      callback(null, { payload: rows });
     });
 
 };
