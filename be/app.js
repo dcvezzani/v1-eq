@@ -1,4 +1,5 @@
 var express = require('express');
+var fs = require('fs');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -47,6 +48,11 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+const cachedDataDir = "./data";
+fs.access(cachedDataDir, (err) => {
+  if (err) fs.mkdir(cachedDataDir);
 });
 
 module.exports = app;

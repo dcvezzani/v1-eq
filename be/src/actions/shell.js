@@ -2,37 +2,35 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import moment from 'moment';
-const DEFAULT_OUTPUT_CACHE_PATH = "/Users/davidvezzani/clients/v1-eq/be/data/default-output.txt";
+// const DEFAULT_OUTPUT_CACHE_PATH = "/Users/davidvezzani/clients/v1-eq/be/data/default-output.txt";
 
 const shellCommand = (cmd64, cachedOutputPath, callback) => {
   console.log(`Refreshing cache: ${cachedOutputPath}`);
   
   const cmd = new Buffer(cmd64, 'base64').toString("ascii");
 
-  exec(cmd, {maxBuffer : 500 * 1024}, (err, stdout, stderr) => {
-    const cachedOutputDirname = path.dirname(cachedOutputPath);
-    
-    fs.access(cachedOutputDirname, (err) => {
-      let writeStreamPath = cachedOutputPath;
-      if (err) {
-        console.log(`Invalid value for cachedOutputPath provided: ${cachedOutputPath}.  Using default cache location instead: ${DEFAULT_OUTPUT_CACHE_PATH}`);
-        writeStreamPath = DEFAULT_OUTPUT_CACHE_PATH;
+  // try {
+    exec(cmd, {maxBuffer : 500 * 1024}, (err, stdout, stderr) => {
+      if(err) {
+        console.error(err);
+        console.log("cmd", cmd);
+        return callback(Error(`Unable to execute shell command`), {cmd, err, stdout, stderr});
       }
 
-      const stream = fs.createWriteStream(writeStreamPath, {flags:'w'}); // {flags:'a'}
-      // stream.write(`\n\n${moment().toDate()}\n`);
+      const cachedOutputDirname = path.dirname(cachedOutputPath);
+
+      const stream = fs.createWriteStream(cachedOutputPath, {flags:'w'}); // {flags:'a'}
       stream.write(stdout);
       stream.end();
+
+      callback(null, {cmd, stdout, stderr});
     });
-
-    if(err) {
-      console.error(err);
-      console.log("cmd", cmd);
-      return callback(Error(`Unable to execute shell command`), {cmd, err, stdout, stderr});
-    }
-
-    callback(null, {cmd, stdout, stderr});
-  });
+      
+  // } catch(err2) {
+  //   console.log(">>> err2", JSON.stringify(err2));
+  //   if (!err2 || Object.keys(err2).length === 0) err2 = Error("Unable to run shell command");
+  //   callback(err2, {cmd, err: err2});
+  // }
 };
 
 export const sendShellCommand = (data, callback) => {
@@ -41,10 +39,11 @@ export const sendShellCommand = (data, callback) => {
   const refresh = data.refresh;
 
   fs.access(cachedOutputPath, (err) => {
+    console.log(">>> refresh, err", refresh, err);
     if (refresh || err) return shellCommand(cmd64, cachedOutputPath, callback);
 
-    let jsonContent = fs.readFile(cachedOutputPath, (err, data) => {
-      if (err) return callback(Error(`Unable to execute shell command`), {cmd, err});
+    fs.readFile(cachedOutputPath, (err, data) => {
+      if (err) return callback(Error(`Unable to read cached data from file`), {cmd, err});
 
       callback(null, {cmd: null, err, stdout: data.toString()});
     });

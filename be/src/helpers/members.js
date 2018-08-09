@@ -28,7 +28,6 @@ export const importMembers = (data, callback) => {
 };
 
 export const archiveMembers = (data, callback) => {
-  console.log(">>> data", data);
   const query = db('members')
   .whereIn('id', data.memberIds)
   .update({

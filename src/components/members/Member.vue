@@ -42,6 +42,14 @@ export default {
 		// window.Event.$on('Member:selectMember', () => this.checked = true);
 		// window.Event.$on('Member:unselectMember', () => this.checked = false);
   },
+
+  watch: {
+    checked: function (newValue, oldValue) {
+      if (newValue) this.$parent.selectMember(this.member);
+      else this.$parent.unselectMember(this.member);
+    }
+  },
+
 }
 </script>
 

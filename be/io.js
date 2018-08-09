@@ -6,7 +6,7 @@ const reportError = (client, err, msg) => {
 	client.emit('error', err, msg);
 };
 
-const V1_CACHE_DIR = '/Users/davidvezzani/clients/v1-eq/be/data';
+const V1_CACHE_DIR = '/Users/davidvezzani/projects/v1-eq/be/data'; // todo: move to external config
 
 const outputPath = (type) => {
   return `${V1_CACHE_DIR}/v1-eq-${type}-cache.json`;
@@ -25,15 +25,20 @@ const sendShellCommandWithType = (client, type, data, callback) => {
   const ioAction = `sendShellCommand:${type}:done`;
 
   sendShellCommand({...data, cachePath: outputPath(type)}, (errRaw, data2) => {
-    const { cmd, err, stdout, stderr } = data2;
+    console.log("errRaw, data2", errRaw, data2);
     let msg = `${label} was activated`
-    if (errRaw) msg = `${label} was NOT activated`
+    if (errRaw) {
+      msg = `${label} was NOT activated`;
+      return client.emit(data.ioAction || ioAction, {...data2, msg: errRaw.message});
+    }
 
+    const { cmd, err, stdout, stderr } = data2;
     const responsePayload = {err: (err || null), msg, cmd, stdout, stderr};
     if (callback) callback(responsePayload, (err, data) => {
-      client.emit(data.ioAction || ioAction, data.responsePayload || responsePayload);
+      return client.emit(data.ioAction || ioAction, data.responsePayload || responsePayload);
     });
-    else client.emit(ioAction, responsePayload);
+
+    client.emit(ioAction, responsePayload);
   });
 }
 
