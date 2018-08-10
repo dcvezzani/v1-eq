@@ -25,66 +25,64 @@
     </div>
 
 
-    <div class="columns member-list">
-      <div class="column">
-        <autocomplete ref="autocomplete" :source="members" @results="filterList" @close="updateMemberView" @enter="updateMemberView"></autocomplete>
-
-        <div class="controls is-left">
-          <a @click="selectAllMembers" href="#">Select All</a> | 
-          <a @click="unselectAllMembers" href="#">Select None</a> 
+    <div class="member-lists">
+      <div class="columns">
+        <div v-show="true || newRecords.length > 0" class="column">
+          <p>{{ newRecords.length }} new records <span v-if="newRecords.length > 0">| <a @click="importMembers" href="#">Import</a></span></p>
+          <p class="import-error">{{ messages.import }}</p>
+          <pre class="formattedJson">{{ newRecords }}</pre>
         </div>
 
-        <ul v-if="filteredMembers().length > 0">
-          <li class="is-left">{{filteredMemberIds.length}} members loaded</li>
-          <Member v-for="member in filteredMembers()" :key="member.id" class="is-left" :member="member"></Member>
-        </ul>
-
-        <ul v-else>
-          <li class="is-left">{{unselectedMembers().length}} members loaded</li>
-          <Member v-for="member in unselectedMembers()" :key="member.id" class="is-left" :member="member"></Member>
-        </ul>
+        <div v-show="true || removedIds.length > 0" class="column">
+          <p>{{ removedIds.length }} removed records <span v-if="removedIds.length > 0">| <a @click="archiveMembers" href="#">Archive</a></span></p>
+          <p class="import-error">{{ messages.archive }}</p>
+          <pre class="formattedJson">{{ removedIds }}</pre>
+        </div>
       </div>
+    
+      <div class="columns">
+        <div class="column">
+          <MemberList 
+            name="unselectedIds" 
+            :memberIds="unselectedIds" 
+            :sendTo="lists.unselectedIds.sendTo"
+            :checked="checked"
+            ></MemberList>
+        </div>
 
-      <div v-show="newRecords.length > 0" class="column">
-        <p>{{ newRecords.length }} new records <span v-if="newRecords.length > 0">| <a @click="importMembers" href="#">Import</a></span></p>
-        <p class="import-error">{{ messages.import }}</p>
-        <pre class="formattedJson">{{ newRecords }}</pre>
-      </div>
-
-      <div v-show="removedIds.length > 0" class="column">
-        <p>{{ removedIds.length }} removed records <span v-if="removedIds.length > 0">| <a @click="archiveMembers" href="#">Archive</a></span></p>
-        <p class="import-error">{{ messages.archive }}</p>
-        <pre class="formattedJson">{{ removedIds }}</pre>
-      </div>
-
-      <div v-show="selectedMemberIds.length > 0" class="column">
-        <ul>
-          <li v-show="selectedMemberIds.length > 0" class="is-left">{{selectedMemberIds.length}} members selected</li>
-          <Member v-for="member in selectedMembers()" :key="member.id" class="is-left" :member="member"></Member>
-        </ul>
-      
-        <pre class="formattedJson" style="display: none">{{ members.filter(m => selectedMemberIds.includes(m.id)).map(m => m.name) }}</pre>
+        <div class="column">
+          <MemberList 
+            name="selectedIds" 
+            :memberIds="selectedIds" 
+            :sendTo="lists.selectedIds.sendTo"
+            :checked="checked"
+            ></MemberList>
+        </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
+import MemberList from '@/components/members/MemberList';
 import Member from '@/components/members/Member';
 import Autocomplete from 'vuejs-auto-complete'
+
+const randomIdentifier = () => {
+  return Math.random().toString(36).replace('0.', '');
+}
 
 export default {
   name: 'Members',
   props: ['name'],
-  components: { Member, Autocomplete },
+  components: { MemberList, Member, Autocomplete },
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
       fetchCommand: '',
-      filteredMemberIds: [],
-      selectedMemberIds: [],
       members: [],
+      selectedIds: [],
+      unselectedIds: [],
       offices: [],
       newRecords: [],
       removedIds: [],
@@ -92,28 +90,30 @@ export default {
         import: null,
         archive: null,
       },
+      lists: {
+        unselectedIds: {sendTo: 'selectedIds'}, 
+        selectedIds: {sendTo: 'unselectedIds'}, 
+      }
     }
   },
   computed: {
     stuff: function() {
 			return 'stuff';
 		},
-    // filteredMembers: function() {
-		// 	return this.members.filter(member => this.filteredMemberIds.includes(member.id));
-		// },
   },
   methods: {
-    filteredMembers: function() {
-			return this.members.filter(member => this.filteredMemberIds.includes(member.id));
-		},
-    selectedMembers: function() {
-      return this.members.filter(m => this.selectedMemberIds.includes(m.id));
-		},
-    unselectedMembers: function() {
-      return this.members.filter(m => !m.selected);
-		},
-    junk: function() {
-		},
+    checked: function({removeFrom, sendTo, memberId, checked}) {
+      console.log("checked:data", {removeFrom, sendTo, memberId, checked});
+      this.appendList(removeFrom, sendTo, [memberId]);
+    },
+    appendList: function(removeFrom, sendTo, memberIds) {
+      console.log("appendList", removeFrom, sendTo, memberIds);
+      memberIds.forEach(mId => this[sendTo].push(mId));
+      memberIds.forEach(mId => {
+        const mIdx = this[removeFrom].indexOf(mId);
+        if (mIdx > -1) this[removeFrom].splice(mIdx,1);
+      });
+    },
     fetchMembers: function(refresh = true) {
 			this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand), refresh});
 		},
@@ -123,79 +123,8 @@ export default {
     archiveMembers: function() {
 			this.$socket.emit('db:members:archive', {memberIds: this.removedIds});
     }, 
-    filterList: function(res) {
-      this.filteredMemberIds = res.results.map(member => member.id);
-    }, 
-    selectMember: function(member) {
-      if(this.selectedMemberIds.indexOf(member.id) === -1) {
-        this.selectedMemberIds.push(member.id);
-        member.selected = true;
-        setTimeout(() => window.Event.$emit('Member:viewUpdate'), 50);
-      }
-    }, 
-    unselectMember: function(member) {
-      if(this.selectedMemberIds.indexOf(member.id) !== -1) {
-        const idIdx = this.selectedMemberIds.indexOf(member.id);
-
-        this.selectedMemberIds.splice(idIdx, 1);
-        member.selected = false;
-        setTimeout(() => window.Event.$emit('Member:viewUpdate'), 50);
-      }
-    }, 
-    selectAllMembers: function() {
-      const memberIds = this.members.map(m => m.id);
-
-      if (this.filteredMemberIds.length === 0) {
-        this.selectedMemberIds = memberIds;
-        this.members.forEach(m => m.selected = true);
-
-      } else {
-        this.filteredMemberIds.forEach(filteredMemberId => {
-          const mIdx = memberIds.indexOf(filteredMemberId);
-          const member = this.members[mIdx];
-          if( !this.selectedMemberIds.includes(member.id) ){
-            this.selectedMemberIds.push(member.id);
-          }
-          member.selected = true;
-        });
-      }
-
-      this.filteredMemberIds = [];
-      document.querySelector('.autocomplete input').focus();
-      setTimeout(() => window.Event.$emit('Member:viewUpdate'), 50);
-    }, 
-    unselectAllMembers: function() {
-      const memberIds = this.members.map(m => m.id);
-
-      if (this.filteredMemberIds.length === 0) {
-        this.selectedMemberIds = [];
-        this.members.forEach(m => m.selected = false);
-
-      } else {
-        this.filteredMemberIds.forEach(filteredMemberId => {
-          const mIdx = memberIds.indexOf(filteredMemberId);
-          const member = this.members[mIdx];
-          const smIdx = this.selectedMemberIds.indexOf(member.id);
-          if( smIdx > -1 ){
-            this.selectedMemberIds.splice(smIdx, 1);
-          }
-          member.selected = false;
-        });
-      }
-
-      this.filteredMemberIds = [];
-      document.querySelector('.autocomplete input').focus();
-      setTimeout(() => window.Event.$emit('Member:viewUpdate'), 50);
-    }, 
-    updateMemberView: function() {
-      window.Event.$emit('Member:viewUpdate');
-    }, 
   },
   sockets:{
-    "Members:blah": function(data){
-		  console.log('Members:blah', data);
-			this.$socket.emit('Members:blah', {msg: 'bleh'});
-    },
     "db:members:import:done": function(data){
       this.fetchMembers(false);
       
@@ -224,14 +153,20 @@ export default {
       this.offices = parsedData.filterOffices;
       this.newRecords = data.newRecords || [];
       this.removedIds = data.removedIds || [];
+
+      this.selectedIds = this.members.slice(0,10).map(m => m.id);
+      this.unselectedIds = this.members.slice(50, 70).map(m => m.id);
+			window.Event.$emit('MemberList:update');
     },
   },
   mounted () {
-		window.Event.$on('Members:activate', (data) => {
-		  console.log('Members:blah', data);
-			window.Event.$emit('Members:activated', {msg: 'done'});
-		});
-
+    document.addEventListener('keydown', function(event) { 
+      if (event.code === 'Enter') {
+        console.log('input:Enter');
+        window.Event.$emit('MemberList:Enter');
+      }
+    }, false);
+    
 		this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand)});
   },
 }

@@ -45,8 +45,7 @@ export default {
 
   watch: {
     checked: function (newValue, oldValue) {
-      if (newValue) this.$parent.selectMember(this.member);
-      else this.$parent.unselectMember(this.member);
+      this.$emit('checked', {checked: newValue, memberId: this.member.id})
     }
   },
 
