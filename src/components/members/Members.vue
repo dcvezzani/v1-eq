@@ -104,11 +104,9 @@ export default {
   },
   methods: {
     checked: function({removeFrom, sendTo, memberId, checked}) {
-      console.log("checked:data", {removeFrom, sendTo, memberId, checked});
       this.appendList(removeFrom, sendTo, [memberId]);
     },
     appendList: function(removeFrom, sendTo, memberIds) {
-      console.log("appendList", removeFrom, sendTo, memberIds);
       memberIds.forEach(mId => this[sendTo].push(mId));
       memberIds.forEach(mId => {
         const mIdx = this[removeFrom].indexOf(mId);
@@ -126,20 +124,17 @@ export default {
     }, 
     enterListener: function(event) { 
       if (event.code === 'Enter') {
-        // console.log('input:Enter');
         window.Event.$emit('MemberList:Enter');
       }
     }, 
     removeEnterListener: function() {
       if (this.listeningForEnter) {
-        console.log("remove listener for document:enter");
         document.removeEventListener('keydown', this.enterListener, false);
         this.listeningForEnter = false;
       }
     },
     addEnterListener: function() {
       if (!this.listeningForEnter) {
-        console.log("listening for document:enter");
         document.addEventListener('keydown', this.enterListener, false);
         this.listeningForEnter = true;
       }
@@ -167,7 +162,6 @@ export default {
 		  console.log('db:members:archive:done', data);
     },
     "sendShellCommand:fetchMembers:done": function(data){
-		  console.log('sendShellCommand:fetchMembers:done', data);
       if (data.err) return console.error(data.err);
       const parsedData = JSON.parse(data.stdout)[0];
       this.members = parsedData.members;
@@ -182,12 +176,10 @@ export default {
   },
   mounted () {
 		window.Event.$on('any:listen-for-enter:add', () => {
-		  console.log('any:listen-for-enter:add');
       this.addEnterListener();
 		});
 
 		window.Event.$on('any:listen-for-enter:remove', () => {
-		  console.log('any:listen-for-enter:remove');
       this.removeEnterListener();
 		});
   

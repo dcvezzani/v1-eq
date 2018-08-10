@@ -64,8 +64,6 @@ export default {
     enterListener: function(event) {
       const self = this;
       if (event.code === 'Enter') {
-        console.log('input:Enter', self.filteredMemberIds);
-        // const memberIds = (self.stagedMemberIds.length > 0) ? self.stagedMemberIds : self.filteredMemberIds;
         self.$parent.appendList(self.name, self.sendTo, self.filteredMemberIds);
 
         document.querySelector(`.autocomplete-${self.name} .autocomplete input`).value = '';
@@ -77,7 +75,6 @@ export default {
     },
     removeEnterListener: function() {
       if (this.listeningForEnter) {
-        console.log("remove listener for enter");
         const autoCompleteInput = document.querySelector(`.autocomplete-${this.name} .autocomplete input`);
         autoCompleteInput.removeEventListener('keydown', this.enterListener, false);
         this.listeningForEnter = false;
@@ -85,7 +82,6 @@ export default {
     },
     addEnterListener: function() {
       if (!this.listeningForEnter) {
-        console.log("listening for enter");
         const autoCompleteInput = document.querySelector(`.autocomplete-${this.name} .autocomplete input`);
         autoCompleteInput.addEventListener('keydown', this.enterListener, false);
         this.listeningForEnter = true;
@@ -105,18 +101,15 @@ export default {
 		});
 
 		window.Event.$on('any:listen-for-enter:add', () => {
-		  console.log('any:listen-for-enter:add');
       this.addEnterListener();
 		});
 
 		window.Event.$on('any:listen-for-enter:remove', () => {
-		  console.log('any:listen-for-enter:remove');
       this.removeEnterListener();
 		});
 
 		window.Event.$on('MemberList:Enter', (data) => {
       if (this.stagedMemberIds.length > 0) {
-        console.log('MemberList:Enter', this.name);
         this.$parent.appendList(this.name, this.sendTo, this.stagedMemberIds);
         document.querySelector(`.autocomplete-${this.name} .autocomplete input`).value = '';
         document.querySelector(`.autocomplete-${this.name} .autocomplete input`).focus();
