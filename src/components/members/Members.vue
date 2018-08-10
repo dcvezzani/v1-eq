@@ -93,7 +93,8 @@ export default {
       lists: {
         unselectedIds: {sendTo: 'selectedIds'}, 
         selectedIds: {sendTo: 'unselectedIds'}, 
-      }
+      }, 
+      listeningForEnter: false, 
     }
   },
   computed: {
@@ -123,6 +124,26 @@ export default {
     archiveMembers: function() {
 			this.$socket.emit('db:members:archive', {memberIds: this.removedIds});
     }, 
+    enterListener: function(event) { 
+      if (event.code === 'Enter') {
+        // console.log('input:Enter');
+        window.Event.$emit('MemberList:Enter');
+      }
+    }, 
+    removeEnterListener: function() {
+      if (this.listeningForEnter) {
+        console.log("remove listener for document:enter");
+        document.removeEventListener('keydown', this.enterListener, false);
+        this.listeningForEnter = false;
+      }
+    },
+    addEnterListener: function() {
+      if (!this.listeningForEnter) {
+        console.log("listening for document:enter");
+        document.addEventListener('keydown', this.enterListener, false);
+        this.listeningForEnter = true;
+      }
+    },
   },
   sockets:{
     "db:members:import:done": function(data){
@@ -160,13 +181,16 @@ export default {
     },
   },
   mounted () {
-    document.addEventListener('keydown', function(event) { 
-      if (event.code === 'Enter') {
-        console.log('input:Enter');
-        window.Event.$emit('MemberList:Enter');
-      }
-    }, false);
-    
+		window.Event.$on('any:listen-for-enter:add', () => {
+		  console.log('any:listen-for-enter:add');
+      this.addEnterListener();
+		});
+
+		window.Event.$on('any:listen-for-enter:remove', () => {
+		  console.log('any:listen-for-enter:remove');
+      this.removeEnterListener();
+		});
+  
 		this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand)});
   },
 }
