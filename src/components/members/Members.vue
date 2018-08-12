@@ -134,6 +134,8 @@ export default {
       this[listName] = newList;
 		},
     fetchMembers: function(refresh = true) {
+      const source = (refresh) ? "lds.org" : "cache or lds.org";
+      this.toastMessage('fetched', `Fetching data from ${source}.  Please wait...`)
 			this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand), refresh});
 		},
     importMembers: function() {
@@ -147,26 +149,28 @@ export default {
       const re = new RegExp(term);
       this.filteredIds = this.unselectedIds.filter(mId => this.membersById[mId].name.match(re));
     }, 
+    toastMessage: function(type, message, timeout=3000) {
+      setTimeout(() => this.messages[type] = null, timeout);
+      this.messages[type] = message;
+    }, 
   },
   sockets:{
     "db:members:import:done": function(data){
       this.fetchMembers(false);
       
-      setTimeout(() => this.messages.import = null, 3000);
       if (data.err) {
         this.messages.import = JSON.stringify(data.err);
       } else {
-        this.messages.import = `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`;
+        this.toastMessage('import', `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`);
         this.$socket.emit('sendShellCommand:fetchMembers', {cmd: ''});
       }
 		  console.log('db:members:import:done', data);
     },
     "db:members:archive:done": function(data){
-      setTimeout(() => this.messages.archive = null, 3000);
       if (data.err) {
         this.messages.archive = JSON.stringify(data.err);
       } else {
-        this.messages.archive = `Successful archival; ${JSON.stringify(data.payload).slice(0,100)}...`;
+        this.toastMessage('archive', `Successful archival; ${JSON.stringify(data.payload).slice(0,100)}...`);
         this.$socket.emit('sendShellCommand:fetchMembers', {cmd: ''});
       }
 		  console.log('db:members:archive:done', data);
@@ -183,9 +187,8 @@ export default {
       // this.unselectedIds = this.members.slice(50, 70).map(m => m.id);
 
       const diffRecordsLength = this.newRecords.length + this.removedIds.length;
-      setTimeout(() => this.messages.fetched = null, 3000);
-      this.messages.fetched = `Successful fetch.  ${(diffRecordsLength === 0) ? 'Local records are already synched.' : 'Updates found.'}`;
-      
+      this.toastMessage('fetched', `Successful fetch.  ${(diffRecordsLength === 0) ? 'Local records are already synched.' : 'Updates found.'}`);
+
       this.selectedMembers = this.members;
 			window.Event.$emit('MemberList:update');
     },

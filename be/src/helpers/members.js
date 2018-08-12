@@ -20,10 +20,39 @@ export const fetchMemberSyncReport = (data, callback) => {
 };
 
 export const importMembers = (data, callback) => {
-  db.batchInsert('members', data.members, 10)
-    .asCallback((err, rows) => {
-			if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert'});
-      callback(null, { payload: rows });
+  const memberIds = data.members.map(m => m.id);
+
+  const queryArchived = db('members')
+    .whereIn('id', memberIds)
+    .whereNotNull('archived_at')
+
+    queryArchived.asCallback((err, rows) => {
+      if (err) return callback({msg: 'Unable to import records', raw: err, query: queryArchived.toString()});
+      const memberIdsToUnarchive = rows.map(m => m.id);
+
+      if (memberIdsToUnarchive.length > 0) {
+        const queryUpdate = db('members')
+          .whereIn('id', memberIdsToUnarchive)
+          .update({ archived_at: null, })
+
+          queryUpdate.asCallback((err, rows) => {
+            if (err) return callback({msg: 'Unable to import records', raw: err, query: queryUpdate.toString()});
+            const membersForBatchUpdate = data.members.filter(m => !memberIdsToUnarchive.includes(m.id));
+
+            db.batchInsert('members', membersForBatchUpdate, 10)
+              .asCallback((err, rows) => {
+                if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert', payload: membersForBatchUpdate});
+                callback(null, { payload: rows });
+              });
+            
+          });
+      } else {
+        db.batchInsert('members', data.members, 10)
+          .asCallback((err, rows) => {
+            if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert', payload: data.members});
+            callback(null, { payload: rows });
+          });
+      }
     });
 };
 
