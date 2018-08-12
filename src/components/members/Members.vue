@@ -14,6 +14,7 @@
         <button @click="fetchMembers" class="button is-link">Fetch</button>
       </div>
     </div>
+      <p class="fetched-message">{{ messages.fetched }}</p>
 
     <div v-if="false" class="columns">
       <div class="column">
@@ -28,13 +29,13 @@
     <div class="member-lists">
       <div class="columns">
         <div v-show="true || newRecords.length > 0" class="column">
-          <p>{{ newRecords.length }} new records <span v-if="newRecords.length > 0">| <a @click="importMembers" href="#">Import</a></span></p>
+          <p>{{ newRecords.length }} new records <span v-if="newRecords.length > 0">| <a @click="importMembers">Import</a></span></p>
           <p class="import-error">{{ messages.import }}</p>
           <pre class="formattedJson">{{ newRecords }}</pre>
         </div>
 
         <div v-show="true || removedIds.length > 0" class="column">
-          <p>{{ removedIds.length }} removed records <span v-if="removedIds.length > 0">| <a @click="archiveMembers" href="#">Archive</a></span></p>
+          <p>{{ removedIds.length }} removed records <span v-if="removedIds.length > 0">| <a @click="archiveMembers">Archive</a></span></p>
           <p class="import-error">{{ messages.archive }}</p>
           <pre class="formattedJson">{{ removedIds }}</pre>
         </div>
@@ -76,6 +77,7 @@ export default {
       newRecords: [],
       removedIds: [],
       messages: {
+        fetched: null,
         import: null,
         archive: null,
       },
@@ -155,6 +157,7 @@ export default {
         this.messages.import = JSON.stringify(data.err);
       } else {
         this.messages.import = `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`;
+        this.$socket.emit('sendShellCommand:fetchMembers', {cmd: ''});
       }
 		  console.log('db:members:import:done', data);
     },
@@ -163,7 +166,8 @@ export default {
       if (data.err) {
         this.messages.archive = JSON.stringify(data.err);
       } else {
-        this.messages.archive = `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`;
+        this.messages.archive = `Successful archival; ${JSON.stringify(data.payload).slice(0,100)}...`;
+        this.$socket.emit('sendShellCommand:fetchMembers', {cmd: ''});
       }
 		  console.log('db:members:archive:done', data);
     },
@@ -175,11 +179,14 @@ export default {
       this.newRecords = data.newRecords || [];
       this.removedIds = data.removedIds || [];
 
-      this.selectedIds = this.members.slice(0,10).map(m => m.id);
-      this.unselectedIds = this.members.slice(50, 70).map(m => m.id);
+      // this.selectedIds = this.members.slice(0,10).map(m => m.id);
+      // this.unselectedIds = this.members.slice(50, 70).map(m => m.id);
 
-      this.selectedMembers = this.members.slice(0,10);
-      this.unselectedMembers = this.members.slice(50, 70);
+      const diffRecordsLength = this.newRecords.length + this.removedIds.length;
+      setTimeout(() => this.messages.fetched = null, 3000);
+      this.messages.fetched = `Successful fetch.  ${(diffRecordsLength === 0) ? 'Local records are already synched.' : 'Updates found.'}`;
+      
+      this.selectedMembers = this.members;
 			window.Event.$emit('MemberList:update');
     },
   },

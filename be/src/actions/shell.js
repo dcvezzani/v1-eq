@@ -13,7 +13,7 @@ const shellCommand = (cmd64, cachedOutputPath, callback) => {
     exec(cmd, {maxBuffer : 500 * 1024}, (err, stdout, stderr) => {
       if(err) {
         console.error(err);
-        console.log("cmd", cmd);
+        // console.log("cmd", cmd);
         return callback(Error(`Unable to execute shell command`), {cmd, err, stdout, stderr});
       }
 
@@ -39,11 +39,15 @@ export const sendShellCommand = (data, callback) => {
   const refresh = data.refresh;
 
   fs.access(cachedOutputPath, (err) => {
-    console.log(">>> refresh, err", refresh, err);
-    if (refresh || err) return shellCommand(cmd64, cachedOutputPath, callback);
+    // console.log(">>> refresh, err", refresh, err);
+    if (refresh || err) {
+      return shellCommand(cmd64, cachedOutputPath, callback);
+    }
 
     fs.readFile(cachedOutputPath, (err, data) => {
-      if (err) return callback(Error(`Unable to read cached data from file`), {cmd, err});
+      if (err) {
+        return callback(Error(`Unable to read cached data from file`), {cmd, err});
+      }
 
       callback(null, {cmd: null, err, stdout: data.toString()});
     });

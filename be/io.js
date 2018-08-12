@@ -20,12 +20,12 @@ const handleAction = (client, ioResponse, data, handler) => {
 };
 
 const sendShellCommandWithType = (client, type, data, callback) => {
-  console.log(`${type}: ${JSON.stringify(data).slice(0,200)}...`);
+  // console.log(`${type}: ${JSON.stringify(data).slice(0,200)}...`);
   const label = type.replace(/\w/, c => c.toUpperCase());
   const ioAction = `sendShellCommand:${type}:done`;
 
   sendShellCommand({...data, cachePath: outputPath(type)}, (errRaw, data2) => {
-    console.log("errRaw, data2", errRaw, data2);
+    // console.log("errRaw, data2", errRaw, data2);
     let msg = `${label} was activated`
     if (errRaw) {
       msg = `${label} was NOT activated`;
@@ -34,7 +34,7 @@ const sendShellCommandWithType = (client, type, data, callback) => {
 
     const { cmd, err, stdout, stderr } = data2;
     const responsePayload = {err: (err || null), msg, cmd, stdout, stderr};
-    if (callback) callback(responsePayload, (err, data) => {
+    if (callback) return callback(responsePayload, (err, data) => {
       return client.emit(data.ioAction || ioAction, data.responsePayload || responsePayload);
     });
 
