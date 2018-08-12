@@ -1,6 +1,7 @@
-var moment = require('moment');
-import db from './../../db'
-import Member from './../models/members-02'
+import moment from 'moment';
+import fs from 'fs';
+import db from './../../db';
+import Member from './../models/members-02';
 
 export const fetchFamilyDetails = (data, callback) => {
   if (data.err) return callback(data.err);
@@ -21,6 +22,55 @@ export const fetchMemberSyncReport = (data, callback) => {
     const newRecords = ldsData[0].members.filter(item => !dbIds.includes(item.id)) || [];
 
     callback(err, {responsePayload: { ...data, removedIds, newRecords }});
+  });
+};
+
+const objectAttrs = (obj, attrs) => {
+
+};
+
+const familyMemberAttrs = (member) => {
+  const {individualId, preferredName, directoryName, gender, surname} = member;
+  return {individualId, preferredName, directoryName, gender, surname};
+};
+
+const processFamilies = (data, callback) => {
+  data.families.forEach(f => {
+    const { coupleName, householdName, headOfHouseIndividualId } = f;
+    const payload = { coupleName, householdName, headOfHouseIndividualId };
+    db('families')
+    .insert(payload)
+    .asCallback((err, rows) => {
+      if (err) return callback({msg: 'Unable to import records', raw: err, query: 'record insert', payload: JSON.stringify(payload)});
+      const familyId = rows[0];
+
+      const { headOfHouse, spouse, children } = f;
+      let memberData = [];
+      memberData.push({familyId, type: 'headOfHouse', ...familyMemberAttrs(headOfHouse)})
+      if (spouse.preferredName.length > 0) memberData.push({familyId, type: 'spouse', ...familyMemberAttrs(spouse)})
+      children.forEach(child => {
+        memberData.push({familyId, type: 'child', ...familyMemberAttrs(child)})
+      });
+
+      db.batchInsert('family_members', memberData, 10)
+      .asCallback((err, rows) => {
+        if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert', payload: JSON.stringify([headOfHouse, spouse, ...children])});
+        callback(null, { payload: {familyId, rows} });
+      });
+    });
+  });
+};
+
+export const importFamilies = (data, callback) => {
+  const familyFile = `/Users/davidvezzani/Downloads/my-ward.json`
+  fs.readFile(familyFile, (err, data) => {
+    if (err) {
+      return callback(Error(`Unable to read cached data from file`), {familyFile, err});
+    }
+
+    const families = JSON.parse(data);
+    // return callback(Error(`wip`), families);
+    processFamilies({families}, callback);
   });
 };
 

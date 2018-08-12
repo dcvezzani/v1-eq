@@ -1,6 +1,6 @@
 import socketIo from 'socket.io';
 import { sendShellCommand } from './src/actions/shell';
-import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails } from './src/helpers/members';
+import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, importFamilies } from './src/helpers/members';
 
 const reportError = (client, err, msg) => {
 	client.emit('error', err, msg);
@@ -14,7 +14,8 @@ const outputPath = (type) => {
 
 const handleAction = (client, ioResponse, data, handler) => {
   handler(data, (err, handlerData) => {
-    if (err) return client.emit(ioResponse, {err, ...handlerData});
+    console.log("ioResponse", ioResponse, {err, ...handlerData})
+    if (err) return client.emit(ioResponse, {err: err.toString(), ...handlerData});
     client.emit(ioResponse, handlerData);
   });
 };
@@ -24,14 +25,12 @@ const sendShellCommandWithType = (client, type, data, callback) => {
   const label = type.replace(/\w/, c => c.toUpperCase());
   const ioAction = `sendShellCommand:${type}:done`;
   console.log(`sendShellCommandWithType`, data);
-  const ldsCmd = new Buffer(data.cmd, 'base64').toString("ascii");
 
-  console.log("ldsCmd", ldsCmd.split(/-H/).filter(m => m.match(/^...cookie: /)));
-
-  const cookie = ldsCmd.split(/-H/).filter(m => m.match(/^...cookie: /))[0].trim().replace(/^[^c]+cookie: (.*)$/, '$1').replace(/' --compressed.*$/, '');
-  console.log("cookie", cookie)
-  data.cmd = Buffer.from(createFetchDetailsSample("3676616600", cookie)).toString('base64');
-  // data.cmd = btoa(fetchDetailsSample);
+  // const ldsCmd = new Buffer(data.cmd, 'base64').toString("ascii");
+  // console.log("ldsCmd", ldsCmd.split(/-H/).filter(m => m.match(/^...cookie: /)));
+  // const cookie = ldsCmd.split(/-H/).filter(m => m.match(/^...cookie: /))[0].trim().replace(/^[^c]+cookie: (.*)$/, '$1').replace(/' --compressed.*$/, '');
+  // console.log("cookie", cookie)
+  // data.cmd = Buffer.from(createFetchDetailsSample("3676616600", cookie)).toString('base64');
 
   sendShellCommand({...data, cachePath: outputPath(type)}, (errRaw, data2) => {
     // console.log("errRaw, data2", errRaw, data2);
@@ -75,6 +74,7 @@ export const io = (server) => {
 
 		client.on('db:members:import', function(data) { handleAction(client, 'db:members:import:done', data, importMembers); });
 		client.on('db:members:archive', function(data) { handleAction(client, 'db:members:archive:done', data, archiveMembers); });
+		client.on('db:members:importFamilies', function(data) { handleAction(client, 'db:members:importFamilies:done', data, importFamilies); });
 	});
 
 };

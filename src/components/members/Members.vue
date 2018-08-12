@@ -50,6 +50,8 @@
           <MemberList :members="unselectedMembers" listName="unselectedMembers" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
           <button @click="createNotes" class="button is-link">Create Notes</button>
           <button @click="fetchFamilyDetails" class="button is-link">Fetch Details</button>
+          <button @click="importFamilies" class="button is-link">Import Families</button>
+          <p class="toast">{{ messages.actions }}</p>
         </div>
       </div>
     </div>
@@ -80,6 +82,7 @@ export default {
       newRecords: [],
       removedIds: [],
       messages: {
+        actions: null,
         fetched: null,
         import: null,
         archive: null,
@@ -149,6 +152,9 @@ export default {
     fetchFamilyDetails: function(refresh = true) {
 			this.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), refresh: (refresh === true)});
 		},
+    importFamilies: function() {
+			this.$socket.emit('db:members:importFamilies', {families: []});
+    }, 
     importMembers: function() {
 			this.$socket.emit('db:members:import', {members: this.newRecords, offices: this.offices});
     }, 
@@ -166,6 +172,14 @@ export default {
     }, 
   },
   sockets:{
+    "db:members:importFamilies:done": function(data){
+      if (data.err) {
+        this.messages.actions = JSON.stringify(data);
+      } else {
+        this.toastMessage('actions', `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`);
+      }
+		  console.log('db:members:importFamilies:done', data);
+    },
     "db:members:import:done": function(data){
       this.fetchMembers(false);
       
