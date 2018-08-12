@@ -48,6 +48,8 @@
 
         <div class="column">
           <MemberList :members="unselectedMembers" listName="unselectedMembers" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
+          <button @click="createNotes" class="button is-link">Create Notes</button>
+          <button @click="fetchFamilyDetails" class="button is-link">Fetch Details</button>
         </div>
       </div>
     </div>
@@ -56,6 +58,7 @@
 
 <script>
 import MemberList from '@/components/members/MemberList';
+import { createNotes } from '@/fetch';
 // const randomIdentifier = () => {
 //   return Math.random().toString(36).replace('0.', '');
 // }
@@ -99,13 +102,18 @@ export default {
 		},
   },
   methods: {
+    createNotes: function() {
+      createNotes('Vezzani, David & Juventa', (err, res) => {
+        console.log("createNotes", err, res);
+      });
+    },
+
     enterListener: function(event) { 
       if (event.code === 'Enter') {
         console.log("enterListener");
         window.Event.$emit('MemberList:Enter');
       }
     }, 
-    
     changeMode: function({listName, mode}) {
       console.log("changeMode", listName, mode);
 
@@ -137,6 +145,9 @@ export default {
       const source = (refresh) ? "lds.org" : "cache or lds.org";
       this.toastMessage('fetched', `Fetching data from ${source}.  Please wait...`)
 			this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand), refresh});
+		},
+    fetchFamilyDetails: function(refresh = true) {
+			this.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), refresh: (refresh === true)});
 		},
     importMembers: function() {
 			this.$socket.emit('db:members:import', {members: this.newRecords, offices: this.offices});
@@ -174,6 +185,9 @@ export default {
         this.$socket.emit('sendShellCommand:fetchMembers', {cmd: ''});
       }
 		  console.log('db:members:archive:done', data);
+    },
+    "sendShellCommand:fetchFamilyDetails:done": function(data){
+      console.log("sendShellCommand:fetchFamilyDetails:done", data);
     },
     "sendShellCommand:fetchMembers:done": function(data){
       if (data.err) return console.error(data.err);

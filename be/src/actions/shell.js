@@ -9,11 +9,11 @@ const shellCommand = (cmd64, cachedOutputPath, callback) => {
   
   const cmd = new Buffer(cmd64, 'base64').toString("ascii");
 
+  console.log("cmd", cmd);
   // try {
     exec(cmd, {maxBuffer : 500 * 1024}, (err, stdout, stderr) => {
       if(err) {
         console.error(err);
-        // console.log("cmd", cmd);
         return callback(Error(`Unable to execute shell command`), {cmd, err, stdout, stderr});
       }
 

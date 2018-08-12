@@ -2,6 +2,11 @@ var moment = require('moment');
 import db from './../../db'
 import Member from './../models/members-02'
 
+export const fetchFamilyDetails = (data, callback) => {
+  if (data.err) return callback(data.err);
+  callback(null, {responsePayload: { ok: true }});
+};
+
 export const fetchMemberSyncReport = (data, callback) => {
   if (data.err) return callback(data.err);
   
