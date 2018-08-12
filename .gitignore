@@ -15,7 +15,7 @@ yarn-error.log*
 
 .*.sw*
 .sw*
-be/data/
+be/data/*.json
 
 be/dev.sqlite3*
 be/token.json
