@@ -41,6 +41,10 @@ export default {
 		// window.Event.$on('Member:viewUpdate', () => this.checked = (this.member.selected === true));
 		// window.Event.$on('Member:selectMember', () => this.checked = true);
 		// window.Event.$on('Member:unselectMember', () => this.checked = false);
+
+		window.Event.$on('Member:select', ({checked, memberIds}) => {
+      if (memberIds.includes(this.member.id)) this.checked = checked;
+    });
   },
 
   watch: {

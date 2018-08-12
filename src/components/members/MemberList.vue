@@ -2,10 +2,28 @@
   <div class="member-list">
     <ul>
       <li class="member is-left">
-        <div class="field">
+        <div class="field has-addons">
+          <div class="control has-icons-left is-expanded">
+            <input :ref="refName" class="input is-rounded" type="text" v-model="search">
+            <span class="icon is-small is-left">
+              <i class="fas fa-search"></i>
+            </span>
+            
+            <p><a @click="selectItems(true)">All</a> | <a @click="selectItems(false)">None</a></p>
+          </div>
           <div class="control">
-            <input class="input is-rounded" type="text" v-model="search">
-            <p>{{ this.mode }}</p>
+            <a @click="pressEnter" class="button">
+              <span class="icon is-small">
+                <i class="fas fa-magic"></i>
+              </span>
+            </a>
+          </div>
+          <div class="control">
+            <a @click="clearFilter(true)" class="button is-rounded">
+              <span class="icon is-small">
+                <i class="fas fa-ban"></i>
+              </span>
+            </a>
           </div>
         </div>
       </li>
@@ -41,13 +59,34 @@ export default {
     stuff: function() {
 			return 'stuff';
 		},
+    refName: function() {
+			return `${this.listName}-filter`;
+		},
   },
   methods: {
     junk: function() {
 		},
-    clearFilter: function() {
+    selectItems: function(checked) {
+      if (this.mode === 'move') {
+        if (checked) {
+          this.mode = 'stage';
+          this.filteredList = this.members;
+        }
+        return window.Event.$emit('Member:select', {checked, memberIds: this.members.map(m => m.id)});
+      }
+      else if (this.mode === 'stage') {
+        return window.Event.$emit('Member:select', {checked, memberIds: this.filteredList.map(m => m.id)});
+      }
+		},
+    pressEnter: function() {
+      window.Event.$emit('MemberList:Enter');
+      this.$refs[this.refName].focus();
+		},
+    clearFilter: function(focus=false) {
       this.search = '';
+      this.mode = 'move';
       this.filteredList = [];
+      if (focus) this.$refs[this.refName].focus();
 		},
     filterList: function(term) {
       console.log("filterList", term);
@@ -102,6 +141,7 @@ export default {
       if (newValue !== oldValue) this.$emit("changeMode", {listName: this.listName, mode: this.mode});
     },
     members: function (newValue, oldValue) {
+      if (this.mode === 'stage' && this.search.length === 0) return this.clearFilter();
       if (this.mode === 'stage') window.Event.$emit('MemberList:filterList', this.listName);
     },
     filteredList: function (newValue, oldValue) {

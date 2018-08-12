@@ -120,6 +120,7 @@ export default {
       const finalIdx = Object.keys(this[listName]).length - 1;
       this[listName].map((m, idx) => {
         if (memberIds.includes(m.id)) {
+          m.selected = false;
           this[this.lists[listName].sendTo].push(m);
         } else newList.push(m);
       });
