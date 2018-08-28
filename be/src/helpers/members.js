@@ -15,7 +15,7 @@ import Member from './../models/members-02';
 
 export const fetchFamilyDetails = (data, callback) => {
   if (data.err) return callback(data.err);
-  callback(null, {responsePayload: { ok: true }});
+  callback(null, {responsePayload: { json: data.stdout, memberId: data.memberId }});
 };
 
 export const fetchFamilies = (data, callback) => {

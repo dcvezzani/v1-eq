@@ -43,15 +43,18 @@
     
       <div class="columns">
         <div class="column">
-          <MemberList :members="selectedMembers" listName="selectedMembers" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
+          <MemberList :members="unselectedMembers" listName="unselectedMembers" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
         </div>
 
         <div class="column">
-          <MemberList :members="unselectedMembers" listName="unselectedMembers" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
+          <MemberList :members="selectedMembers" listName="selectedMembers" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
           <button @click="createNotes" class="button is-link">Create Notes</button>
           <button @click="fetchFamilyDetails" class="button is-link">Fetch Details</button>
           <button @click="importFamilies" class="button is-link">Import Families</button>
           <p class="toast">{{ messages.actions }}</p>
+
+          <div v-show="memberPhoto" class="memberPhoto"><img :src="memberPhoto" alt=""></div>
+          <div v-for="photo in memberPhotos" class="memberPhoto"><img :src="photo" alt=""></div>
         </div>
       </div>
     </div>
@@ -91,6 +94,8 @@ export default {
       selectedMembers: [],
       unselectedMembers: [],
       memberName: 'name',
+      memberPhoto: '',
+      memberPhotos: [],
     }
   },
   computed: {
@@ -149,11 +154,11 @@ export default {
 			this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand), refresh});
 		},
     fetchFamilyDetails: function(event, refresh = true) {
-      console.log("this.selectedMembers", this.selectedMembers);
+      console.log("this.selectedMembers", this.selectedMembers[0].id);
       // 3694966261, 3676616600
-      // if (this.lists.selectedMembers[0]) {
-      //   this.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), memberId: this.lists.selectedMembers[0], refresh: (refresh === true)});
-      // }
+      if (this.selectedMembers[0]) {
+        this.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), memberId: this.selectedMembers[0].id, refresh: (refresh === true)});
+      }
 		},
     importFamilies: function() {
 			this.$socket.emit('db:members:importFamilies', {families: []});
@@ -200,6 +205,16 @@ export default {
     },
     "sendShellCommand:fetchFamilyDetails:done": function(data){
       console.log("sendShellCommand:fetchFamilyDetails:done", data);
+      const memberDetails = JSON.parse(data.json);
+      console.log("memberDetails", memberDetails);
+
+      this.memberPhotos.length = 0;
+      if (memberDetails.headOfHousehold) this.memberPhotos.push(memberDetails.headOfHousehold.photoUrl);
+      if (memberDetails.spouse) this.memberPhotos.push(memberDetails.spouse.photoUrl);
+      if (memberDetails.householdInfo) this.memberPhotos.push(memberDetails.householdInfo.photoUrl);
+      memberDetails.otherHouseholdMembers.forEach(other => this.memberPhotos.push(other.photoUrl));
+
+      // this.memberPhoto = (memberDetails.headOfHousehold.individualId === data.memberId) ? memberDetails.headOfHousehold.photoUrl : memberDetails.spouse.photoUrl;
     },
     "sendShellCommand:fetchMembers:done": function(data){
       if (data.err) return console.error(data.err);
@@ -212,7 +227,7 @@ export default {
       const diffRecordsLength = this.newRecords.length + this.removedIds.length;
       this.toastMessage('fetched', `Successful fetch.  ${(diffRecordsLength === 0) ? 'Local records are already synched.' : 'Updates found.'}`);
 
-      this.selectedMembers = this.members;
+      this.unselectedMembers = this.members;
 			window.Event.$emit('MemberList:update');
     },
   },
@@ -226,4 +241,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.memberPhoto {
+  width: 150px;
+  display: inline-block;
+  margin: 5px;
+}
 </style>
