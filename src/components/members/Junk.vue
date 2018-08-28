@@ -84,13 +84,14 @@
 </template>
 
 <script>
+import Families from '@/components/members/Families';
 import Members from '@/components/members/Members';
 import Index from '@/components/members/Index';
 import ListRoles from '@/components/ListRoles';
 import ListMembers from '@/components/ListMembers';
 import FormatVisitRequest from '@/components/FormatVisitRequest';
 export default {
-  components: { Members, Index, ListRoles, ListMembers, FormatVisitRequest,},
+  components: { Families, Members, Index, ListRoles, ListMembers, FormatVisitRequest,},
   name: 'HelloWorld',
   data () {
     return {

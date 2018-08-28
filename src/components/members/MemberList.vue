@@ -29,10 +29,10 @@
       </li>
                 
       <div v-if="filteredList.length > 0">
-        <Member v-for="member in filteredList" :key="member.id" :member="member" @checked="memberChecked"></Member>
+        <Member v-for="member in filteredList" :name="memberListItemName" :key="member[memberListItemId]" :member="member" @checked="memberChecked"></Member>
       </div>
       <div v-else>
-        <Member v-for="member in members" :key="member.id" :member="member" @checked="memberChecked"></Member>
+        <Member v-for="member in members" :name="memberListItemName" :key="member[memberListItemId]" :member="member" @checked="memberChecked"></Member>
       </div>
     </ul>
 
@@ -45,7 +45,7 @@ import _ from 'lodash';
 
 export default {
   name: 'MemberList',
-  props: ['listName', 'members', 'updateList'],
+  props: ['listName', 'members', 'updateList', 'memberName', 'memberId'],
   components: { Member },
   data () {
     return {
@@ -62,6 +62,12 @@ export default {
     refName: function() {
 			return `${this.listName}-filter`;
 		},
+    memberListItemName: function() {
+			return this.memberName || 'name';
+		},
+    memberListItemId: function() {
+			return this.memberId || 'id';
+		},
   },
   methods: {
     junk: function() {
@@ -72,10 +78,10 @@ export default {
           this.mode = 'stage';
           this.filteredList = this.members;
         }
-        return window.Event.$emit('Member:select', {checked, memberIds: this.members.map(m => m.id)});
+        return window.Event.$emit('Member:select', {checked, memberIds: this.members.map(m => m[this.memberListItemId])});
       }
       else if (this.mode === 'stage') {
-        return window.Event.$emit('Member:select', {checked, memberIds: this.filteredList.map(m => m.id)});
+        return window.Event.$emit('Member:select', {checked, memberIds: this.filteredList.map(m => m[this.memberListItemId])});
       }
 		},
     pressEnter: function() {
@@ -91,11 +97,11 @@ export default {
     filterList: function(term) {
       console.log("filterList", term);
       const reFilter = new RegExp(term, 'i');
-      this.filteredList = this.members.filter(m => m.name.match(reFilter));
+      this.filteredList = this.members.filter(m => m[this.memberListItemName].match(reFilter));
 		},
     memberChecked: function(member) {
       console.log("member checked", member, this.mode);
-      if (this.mode === 'move') return this.$emit("moveMembers", {listName: this.listName, memberIds: [member.id]});
+      if (this.mode === 'move') return this.$emit("moveMembers", {listName: this.listName, memberIds: [member[this.memberListItemId]]});
 		},
   },
   sockets:{
@@ -116,12 +122,12 @@ export default {
 
     window.Event.$on('MemberList:Enter', () => {
       if (this.mode === 'stage') {
-        const stagedMemberIds = this.filteredList.filter(m => m.selected).map(m => m.id);
+        const stagedMemberIds = this.filteredList.filter(m => m.selected).map(m => m[this.memberListItemId]);
         if (stagedMemberIds.length > 0) {
           return this.$emit("moveMembers", {listName: this.listName, memberIds: stagedMemberIds});
         }
 
-        const memberIds = this.filteredList.map(m => m.id);
+        const memberIds = this.filteredList.map(m => m[this.memberListItemId]);
         this.clearFilter();
         return this.$emit("moveMembers", {listName: this.listName, memberIds});
       }

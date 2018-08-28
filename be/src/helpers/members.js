@@ -3,9 +3,24 @@ import fs from 'fs';
 import db from './../../db';
 import Member from './../models/members-02';
 
+// const createFetchFamilyDetailsCmd = (memberId, cookie) => {
+//   const ldsCmd = new Buffer(data.cmd, 'base64').toString("ascii");
+//   console.log("ldsCmd", ldsCmd.split(/-H/).filter(m => m.match(/^...cookie: /)));
+//   const cookie = ldsCmd.split(/-H/).filter(m => m.match(/^...cookie: /))[0].trim().replace(/^[^c]+cookie: (.*)$/, '$1').replace(/' --compressed.*$/, '');
+//   console.log("cookie", cookie)
+//   data.cmd = Buffer.from(createFetchDetailsSample("3676616600", cookie)).toString('base64');
+//   
+//   return `curl 'https://www.lds.org/directory/services/web/v3.0/mem/householdProfile/${memberId}?imageSize=MEDIUM' -H $'cookie: ${cookie}' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: application/json, text/javascript, |)}>#*; q=0.01' -H 'referer: https://www.lds.org/directory/?lang=eng' -H 'authority: www.lds.org' -H 'x-requested-with: XMLHttpRequest' --compressed`;
+// };
+
 export const fetchFamilyDetails = (data, callback) => {
   if (data.err) return callback(data.err);
   callback(null, {responsePayload: { ok: true }});
+};
+
+export const fetchFamilies = (data, callback) => {
+  if (data.err) return callback(data.err);
+  callback(null, {responsePayload: { ...data, removedIds: [], newRecords: [] }});
 };
 
 export const fetchMemberSyncReport = (data, callback) => {

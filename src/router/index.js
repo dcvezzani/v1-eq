@@ -6,6 +6,7 @@ import FormatVisitRequest from '@/components/FormatVisitRequest'
 import ListMembers from '@/components/ListMembers'
 import ListRoles from '@/components/ListRoles'
 import Members from '@/components/members/Members'
+import Families from '@/components/members/Families'
 
 Vue.use(Router)
 
@@ -25,6 +26,11 @@ export default new Router({
       path: '/Members',
       name: 'Members',
       component: Members
+    }, 
+    {
+      path: '/Families',
+      name: 'Families',
+      component: Families
     }, 
     {
       path: '/ListRoles',

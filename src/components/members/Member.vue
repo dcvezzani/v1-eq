@@ -4,7 +4,7 @@
       <div class="control">
         <label class="checkbox">
           <input type="checkbox" v-model="checked">
-          {{ member.name }}
+          {{ member[displayName] }}
         </label>
       </div>
     </div>
@@ -14,7 +14,7 @@
 <script>
 export default {
   name: 'Member',
-  props: ['member'],
+  props: ['member', 'name'],
   // components: { Junk },
   data () {
     return {
@@ -25,6 +25,9 @@ export default {
   computed: {
     stuff: function() {
 			return 'stuff';
+		},
+    displayName: function() {
+			return this.name || 'name';
 		},
   },
   methods: {
