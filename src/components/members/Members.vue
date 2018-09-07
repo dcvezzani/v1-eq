@@ -73,6 +73,27 @@
             </div>
 
             <div v-show="selectedActiveTab == 'lists'" class="xtab-details">
+              <div class="field ">
+                <button @click="allTags" class="button is-link">Fetch Tags</button>
+                <button @click="applyTags" class="button is-link">Apply Tags</button>
+              </div>
+
+              <div class="field has-addons">
+                <div class="control">
+                  <input v-model="newTagName" class="input" type="text" placeholder="Tag name">
+                </div>
+                <div class="control">
+                  <a @click="createTag" class="button is-link">
+                    Create Tag
+                  </a>
+                </div>
+              </div>
+
+              <ul class="tags">
+                <li class="tag" v-for="tag in tags" :key="tag.id">
+                  <label class="checkbox"> <input v-model="selectedTags" :value="tag.id" type="checkbox"> {{tag.name}} </label>
+                </li>
+              </ul>
             </div>
             
           </div>
@@ -95,7 +116,7 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
-      fetchCommand: `curl 'https://lcr.lds.org/services/orgs/sub-orgs-with-callings?lang=eng&subOrgId=5873015' -H 'pragma: no-cache' -H $'cookie: audience_split=64; aam_uuid=63419155236752781521446756028120250735; lds-preferred-lang-v2=eng; audience_id=501805; WRUID=1640016059515610; aam_tnt=aam%3D662001; aam_sc=aamsc%3D662001%7C708195%7C855179%7C662001; lds-preferred-lang=eng; _CT_RS_=Recording; __CT_Data=gpv=178&apv_310_www11=3&cpv_310_www11=3&ckp=tld&dm=lds.org&apv_59_www11=175&cpv_59_www11=175&rpv_59_www11=174; ctm={\'pgv\':1003506360507272|\'vst\':999856181377944|\'vstr\':4158988253884699|\'intr\':1535408490233|\'v\':1|\'lvst\':1242}; cr-aths=shown; check=true; s_cc=true; audience_s_split=100; AMCVS_66C5485451E56AAE0A490D45%40AdobeOrg=1; AMCV_66C5485451E56AAE0A490D45%40AdobeOrg=1099438348%7CMCIDTS%7C17781%7CMCMID%7C63648270562000236141460435237579820057%7CMCAAMLH-1536523066%7C9%7CMCAAMB-1536797566%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1536199966s%7CNONE%7CMCAID%7CNONE%7CMCSYNCSOP%7C411-17784%7CvVersion%7C2.1.0; amlbcookie=74; JSESSIONID=0; ADRUM=s=1536208258965&r=https%3A%2F%2Fwww.lds.org%2F%3F479231918; TS01b89640=01999b70236b15dcbd7f11270de75449f16606deee4534cf43afece1acb27337efbc85cdba2448cf2c22afcb72409aa84cf2cff1f118a42b398b4742a16f44580815d6a16d; lds-id=AQIC5wM2LY4Sfcw_DywDi_LOMNhHgOkdit9EPzt0mKEWhss.*AAJTSQACMDIAAlNLABQtNjA0NzQ2NDc4MjY2NDM5NzQ0NgACUzEAAjA0*; __VCAP_ID__=c4bc790c-4121-4cdf-52d3-6713; s_ppvl=https%253A%2F%2Fwww.lds.org%2Fdirectory%2F%253Flang%253Deng%2C98%2C89%2C1122%2C1182%2C1122%2C2560%2C1440%2C1%2CL; s_ppv=https%253A%2F%2Fwww.lds.org%2Fdirectory%2F%253Flang%253Deng%2523%2C98%2C89%2C1122%2C1182%2C1122%2C2560%2C1440%2C1%2CL; ObSSOCookie=01wUliPIGXnu8ni6vZv%2BEu7PAbzJJTjuMIBRweRKE49rL8KyLAiY2xNStzDmfjWvRB8SQmWFyzxUCtfV6NznlFcHpKPYIIMYvq%2FXwdypFdCh6razxnVA9gSdlVpDU770w6UILG%2Bhb2%2BBBR%2BHAdJsVfkhi7Fu0YWDkCnq2GOV43DZ5f31D7QlU7zEbaSGEi8HhJVhVw%2FEtOU7V8iORTgyb601Ely3wEPPEpLc1oXbAorLEQbtdPVFRnjrySuUPqejaW27MDiWmxntW%2BNKpuFqrFIimFQJsnUEaLJ9txRwDZCA0W4vptDHjo9rQoK2q3TfMK38n0Tj4F6oY9AFFfoB3%2BOhmOqc0rQikJVful2Igl4%3D; mbox=PC#122fc9ed0cd34b3d95e257b21817afe4.17_80#1541530570|session#ed647dd0463d464a99328fb9095a77f8#1536292515; ADRUM_BTa=R:52|g:a1226939-9a11-4470-959a-588120eef615|n:customer1_acb14d98-cf8b-4f6d-8860-1c1af7831070; ADRUM_BT1=R:52|i:14049|e:218; utag_main=v_id:015ed4d1af5a0017e3d97706b96505079001d07100fb8$_sn:131$_ss:0$_st:1536292455318$vapi_domain:lds.org$dc_visit:131$ses_id:1536288669851%3Bexp-session$_pn:3%3Bexp-session$dc_event:7%3Bexp-session$dc_region:us-east-1%3Bexp-session; t_ppv=undefined%2C100%2C51%2C1218%2C13817; s_sq=ldsall%3D%2526pid%253Dhttps%25253A%25252F%25252Flcr.lds.org%25252Freport%25252Fmembers-moved-in%25253Flang%25253Deng%2526oid%253Dhttps%25253A%25252F%25252Flcr.lds.org%25252Forgs%25252F5873015%25253Flang%25253Deng%2526ot%253DA' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: application/json, text/plain, */*' -H 'cache-control: no-cache' -H 'authority: lcr.lds.org' -H 'referer: https://lcr.lds.org/orgs/5873015?lang=eng' --compressed`,
+      fetchCommand: `curl 'https://lcr.lds.org/services/orgs/sub-orgs-with-callings?lang=eng&subOrgId=5873015' -H 'pragma: no-cache' -H $'cookie: audience_split=64; aam_uuid=63419155236752781521446756028120250735; lds-preferred-lang-v2=eng; audience_id=501805; WRUID=1640016059515610; aam_tnt=aam%3D662001; aam_sc=aamsc%3D662001%7C708195%7C855179%7C662001; lds-preferred-lang=eng; _CT_RS_=Recording; __CT_Data=gpv=178&apv_310_www11=3&cpv_310_www11=3&ckp=tld&dm=lds.org&apv_59_www11=175&cpv_59_www11=175&rpv_59_www11=174; ctm={\'pgv\':1003506360507272|\'vst\':999856181377944|\'vstr\':4158988253884699|\'intr\':1535408490233|\'v\':1|\'lvst\':1242}; cr-aths=shown; check=true; s_cc=true; audience_s_split=100; AMCVS_66C5485451E56AAE0A490D45%40AdobeOrg=1; AMCV_66C5485451E56AAE0A490D45%40AdobeOrg=1099438348%7CMCIDTS%7C17781%7CMCMID%7C63648270562000236141460435237579820057%7CMCAAMLH-1536523066%7C9%7CMCAAMB-1536797566%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1536199966s%7CNONE%7CMCAID%7CNONE%7CMCSYNCSOP%7C411-17784%7CvVersion%7C2.1.0; amlbcookie=74; JSESSIONID=0; ADRUM=s=1536208258965&r=https%3A%2F%2Fwww.lds.org%2F%3F479231918; TS01b89640=01999b70236b15dcbd7f11270de75449f16606deee4534cf43afece1acb27337efbc85cdba2448cf2c22afcb72409aa84cf2cff1f118a42b398b4742a16f44580815d6a16d; lds-id=AQIC5wM2LY4Sfcw_DywDi_LOMNhHgOkdit9EPzt0mKEWhss.*AAJTSQACMDIAAlNLABQtNjA0NzQ2NDc4MjY2NDM5NzQ0NgACUzEAAjA0*; s_ppvl=https%253A%2F%2Fwww.lds.org%2Fdirectory%2F%253Flang%253Deng%2C98%2C89%2C1122%2C1182%2C1122%2C2560%2C1440%2C1%2CL; s_ppv=https%253A%2F%2Fwww.lds.org%2Fdirectory%2F%253Flang%253Deng%2523%2C98%2C89%2C1122%2C1182%2C1122%2C2560%2C1440%2C1%2CL; __VCAP_ID__=cb8981c6-066a-488f-464d-f3ec; ObSSOCookie=YyDnyzbNe88RoV9X6LoOUKxkN1Skh7DC5fmRcMBsbz8xLS45mYZGxWxwAYmpS5eNtuMj77PrjXmLOj7x1d%2FJRb7yqEveU9JrvDx7Yevr%2Bp96bv3AbuVejZwqkappiHTd9s%2BfgbvGmsskq2xkxumDnvIZn3qBApCfq2zQ8O0FXWDMhEnlK7HLakpY9JUyvl0v6WSJkmqXZCv8%2FLAQlb1ykYGe1RAPvLrefG1%2Bwp5Jdmu5hMQL6a5Wyz5EOR31G851nB3x2TchglV4frzcF%2BRwOgymjg13i92oDajEG7mJMZJOdAXmDS3BkpYAPOrZyGCWpv%2BlwRgUQfb5AmH8%2BdXOcHddoundsJB2C%2BCIHxBxMJY%3D; mbox=PC#122fc9ed0cd34b3d95e257b21817afe4.17_80#1541530570|session#209b313cace940019f8a8cf99fbf3b23#1536297182; ADRUM_BTa=R:40|g:4f86d848-0c6e-41c6-a9b5-6e796ece9cda|n:customer1_acb14d98-cf8b-4f6d-8860-1c1af7831070; ADRUM_BT1=R:40|i:14049|e:218; utag_main=v_id:015ed4d1af5a0017e3d97706b96505079001d07100fb8$_sn:132$_ss:0$_st:1536297136353$vapi_domain:lds.org$dc_visit:132$ses_id:1536294423316%3Bexp-session$_pn:3%3Bexp-session$dc_event:7%3Bexp-session$dc_region:us-east-1%3Bexp-session; t_ppv=undefined%2C100%2C79%2C1122%2C18059; s_sq=ldsall%3D%2526pid%253Dhttps%25253A%25252F%25252Flcr.lds.org%25252Forgs%25252F5873015%25253Flang%25253Deng%2526oid%253Dhttps%25253A%25252F%25252Flcr.lds.org%25252Forgs%25252F5873015%25253Flang%25253Deng%2526ot%253DA' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: application/json, text/plain, */*' -H 'cache-control: no-cache' -H 'authority: lcr.lds.org' -H 'referer: https://lcr.lds.org/orgs/5873015?lang=eng' --compressed`,
       members: [],
       offices: [],
       newRecords: [],
@@ -119,6 +140,9 @@ export default {
       memberPhotos: [],
       memberInfo: null,
       selectedActiveTab: 'details', 
+      tags: [],
+      newTagName: null,
+      selectedTags: [],
     }
   },
   computed: {
@@ -178,6 +202,13 @@ export default {
       return ` <a href="mailto:${cleanEmail}">${cleanEmail}</a> `;
     },
 
+    createTag: function() {
+      if (this.newTagName && this.newTagName.length > 0) this.$socket.emit('db:tags:create', {name: this.newTagName});
+    },
+    selectTag: function(name) {
+      if (this.newTagName && this.newTagName.length > 0) this.$socket.emit('db:tags:create', {name: this.newTagName});
+    },
+
     createNotes: function() {
       this.selectedMembers.forEach(member => {
         this.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), memberId: member.id, refresh: true, redirect: 'sendShellCommand:fetchFamilyDetails:createNotes:done'});
@@ -221,12 +252,42 @@ export default {
     archiveMembers: function() {
 			this.$socket.emit('db:members:archive', {memberIds: this.removedIds});
     }, 
+    allTags: function() {
+			this.$socket.emit('db:tags:all');
+    },
+    applyTags: function() {
+      const memberIds = this.selectedMembers.map(member => member.id);
+      
+		  console.log('db:tags:apply', {memberIds, tagIds: this.selectedTags});
+			this.$socket.emit('db:tags:apply', {memberIds, tagIds: this.selectedTags});
+    },
     toastMessage: function(type, message, timeout=3000) {
       setTimeout(() => this.messages[type] = null, timeout);
       this.messages[type] = message;
     }, 
   },
   sockets:{
+    "db:tags:create:done": function(data){
+		  console.log('db:tags:create:done', data);
+      if (data.err) {
+        this.messages.actions = JSON.stringify(data);
+      } else {
+        this.toastMessage('actions', `Successfully created tag`);
+      }
+			this.$socket.emit('db:tags:all');
+    },
+    "db:tags:all:done": function(data){
+		  console.log('db:tags:all:done', data);
+      this.tags = data.responsePayload;
+    },
+    "db:tags:apply:done": function(data){
+		  console.log('db:tags:apply:done', data);
+      if (data.err) {
+        this.messages.actions = JSON.stringify(data);
+      } else {
+        this.toastMessage('actions', `Successfully applied tag(s)`);
+      }
+    },
     "db:members:importFamilies:done": function(data){
       if (data.err) {
         this.messages.actions = JSON.stringify(data);
@@ -314,6 +375,7 @@ export default {
   },
   mounted () {
 		this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand)});
+    this.allTags();
   },
   watch: {
   },

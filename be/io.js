@@ -2,7 +2,20 @@ import socketIo from 'socket.io';
 import { V1_CACHE_DIR } from './constants';
 import { sendShellCommand } from './src/actions/shell';
 import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies } from './src/helpers/members';
+import { allTags, createTag, applyTags } from './src/helpers/tags';
 import fs from 'fs';
+import Member from './src/models/members-02';
+import Tag from './src/models/tags';
+
+// Tag.create('xxxxxxxx', null, (err, res) => {
+//   console.log(">>>create tag", err, res);
+// });
+// Member.tagMember(3694966261, 1, (err, res) => {
+//   console.log(">>>tagged member", err, res);
+// })
+// Tag.all((err, res) => {
+//   console.log(">>>all tags", err, res);
+// });
 
 const reportError = (client, err, msg) => {
 	client.emit('error', err, msg);
@@ -118,6 +131,10 @@ export const io = (server) => {
 		client.on('db:members:archive', function(data) { handleAction(client, 'db:members:archive:done', data, archiveMembers); });
 		client.on('db:members:importFamilies', function(data) { handleAction(client, 'db:members:importFamilies:done', data, importFamilies); });
 		client.on('db:members:fetchFamilies', function(data) { handleAction(client, 'db:members:fetchFamilies:done', data, ybFetchFamilies); });
+
+		client.on('db:tags:all', function(data) { handleAction(client, 'db:tags:all:done', data, allTags); });
+		client.on('db:tags:create', function(data) { handleAction(client, 'db:tags:create:done', data, createTag); });
+		client.on('db:tags:apply', function(data) { handleAction(client, 'db:tags:apply:done', data, applyTags); });
 	});
 
 };
