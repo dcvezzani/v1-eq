@@ -7,6 +7,7 @@ import ListMembers from '@/components/ListMembers'
 import ListRoles from '@/components/ListRoles'
 import Members from '@/components/members/Members'
 import Families from '@/components/members/Families'
+import Yearbook from '@/components/members/Yearbook'
 
 Vue.use(Router)
 
@@ -31,6 +32,11 @@ export default new Router({
       path: '/Families',
       name: 'Families',
       component: Families
+    }, 
+    {
+      path: '/Yearbook',
+      name: 'Yearbook',
+      component: Yearbook
     }, 
     {
       path: '/ListRoles',

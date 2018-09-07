@@ -19,9 +19,13 @@ const shellCommand = (cmd64, cachedOutputPath, callback) => {
 
       const cachedOutputDirname = path.dirname(cachedOutputPath);
 
-      const stream = fs.createWriteStream(cachedOutputPath, {flags:'w'}); // {flags:'a'}
-      stream.write(stdout);
-      stream.end();
+      try {
+        const stream = fs.createWriteStream(cachedOutputPath, {flags:'w'}); // {flags:'a'}
+        stream.write(stdout);
+        stream.end();
+      } catch(err) { 
+        console.error("Unable to cache results (not the end of the world)"); 
+      }
 
       callback(null, {cmd, stdout, stderr});
     });
@@ -39,7 +43,7 @@ export const sendShellCommand = (data, callback) => {
   const refresh = data.refresh;
 
   fs.access(cachedOutputPath, (err) => {
-    // console.log(">>> refresh, err", refresh, err);
+    console.log(">>> refresh, err", refresh, err);
     if (refresh || err) {
       return shellCommand(cmd64, cachedOutputPath, callback);
     }

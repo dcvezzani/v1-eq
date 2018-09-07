@@ -48,13 +48,34 @@
 
         <div class="column">
           <MemberList :members="selectedMembers" listName="selectedMembers" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
-          <button @click="createNotes" class="button is-link">Create Notes</button>
-          <button @click="fetchFamilyDetails" class="button is-link">Fetch Details</button>
-          <button @click="importFamilies" class="button is-link">Import Families</button>
-          <p class="toast">{{ messages.actions }}</p>
 
-          <div v-show="memberPhoto" class="memberPhoto"><img :src="memberPhoto" alt=""></div>
-          <div v-for="photo in memberPhotos" class="memberPhoto"><img :src="photo" alt=""></div>
+          <div v-show="selectedMembers.length > 0" class="selected-actions">
+            <div class="xtabs">
+              <a @click="selectedActiveTab = 'details'">Details</a> | 
+              <a @click="selectedActiveTab = 'lists'">Lists</a> | 
+            </div>
+          
+            <div v-show="selectedActiveTab == 'details'" class="xtab-details">
+              <button @click="createNotes" class="button is-link">Create Notes</button>
+              <button @click="fetchFamilyDetails" class="button is-link">Fetch Details</button>
+              <button @click="fetchFamilyDetailsBatch" class="button is-link">Fetch Details (Batch)</button>
+              <p class="toast" v-html="messages.actions"></p>
+
+              <div v-if="memberInfo" class="member-info">
+                <p class="title">Contact Info:</p>
+                <div class="member-info-name">{{memberInfo.coupleName}}</div>
+                <div class="member-info-address">{{formattedAddress(memberInfo.householdInfo.address)}}</div>
+                <div class="member-info-phone"><span v-html="formattedPhone(memberInfo.householdInfo.phone)"></span> </div>
+                <div class="member-info-email"><span v-html="formattedEmail(memberInfo.headOfHousehold.email)"></span> </div>
+              </div>
+
+              <div v-for="{ name, photoUrl } in memberPhotos" class="memberPhoto"><img :src="photoUrl" :title="name"></div>
+            </div>
+
+            <div v-show="selectedActiveTab == 'lists'" class="xtab-details">
+            </div>
+            
+          </div>
         </div>
       </div>
     </div>
@@ -74,7 +95,7 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
-      fetchCommand: '',
+      fetchCommand: `curl 'https://lcr.lds.org/services/orgs/sub-orgs-with-callings?lang=eng&subOrgId=5873015' -H 'pragma: no-cache' -H $'cookie: audience_split=64; aam_uuid=63419155236752781521446756028120250735; lds-preferred-lang-v2=eng; audience_id=501805; WRUID=1640016059515610; aam_tnt=aam%3D662001; aam_sc=aamsc%3D662001%7C708195%7C855179%7C662001; lds-preferred-lang=eng; _CT_RS_=Recording; __CT_Data=gpv=178&apv_310_www11=3&cpv_310_www11=3&ckp=tld&dm=lds.org&apv_59_www11=175&cpv_59_www11=175&rpv_59_www11=174; ctm={\'pgv\':1003506360507272|\'vst\':999856181377944|\'vstr\':4158988253884699|\'intr\':1535408490233|\'v\':1|\'lvst\':1242}; cr-aths=shown; check=true; s_cc=true; audience_s_split=100; AMCVS_66C5485451E56AAE0A490D45%40AdobeOrg=1; AMCV_66C5485451E56AAE0A490D45%40AdobeOrg=1099438348%7CMCIDTS%7C17781%7CMCMID%7C63648270562000236141460435237579820057%7CMCAAMLH-1536523066%7C9%7CMCAAMB-1536797566%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1536199966s%7CNONE%7CMCAID%7CNONE%7CMCSYNCSOP%7C411-17784%7CvVersion%7C2.1.0; amlbcookie=74; JSESSIONID=0; ADRUM=s=1536208258965&r=https%3A%2F%2Fwww.lds.org%2F%3F479231918; TS01b89640=01999b70236b15dcbd7f11270de75449f16606deee4534cf43afece1acb27337efbc85cdba2448cf2c22afcb72409aa84cf2cff1f118a42b398b4742a16f44580815d6a16d; lds-id=AQIC5wM2LY4Sfcw_DywDi_LOMNhHgOkdit9EPzt0mKEWhss.*AAJTSQACMDIAAlNLABQtNjA0NzQ2NDc4MjY2NDM5NzQ0NgACUzEAAjA0*; __VCAP_ID__=c4bc790c-4121-4cdf-52d3-6713; s_ppvl=https%253A%2F%2Fwww.lds.org%2Fdirectory%2F%253Flang%253Deng%2C98%2C89%2C1122%2C1182%2C1122%2C2560%2C1440%2C1%2CL; s_ppv=https%253A%2F%2Fwww.lds.org%2Fdirectory%2F%253Flang%253Deng%2523%2C98%2C89%2C1122%2C1182%2C1122%2C2560%2C1440%2C1%2CL; ObSSOCookie=01wUliPIGXnu8ni6vZv%2BEu7PAbzJJTjuMIBRweRKE49rL8KyLAiY2xNStzDmfjWvRB8SQmWFyzxUCtfV6NznlFcHpKPYIIMYvq%2FXwdypFdCh6razxnVA9gSdlVpDU770w6UILG%2Bhb2%2BBBR%2BHAdJsVfkhi7Fu0YWDkCnq2GOV43DZ5f31D7QlU7zEbaSGEi8HhJVhVw%2FEtOU7V8iORTgyb601Ely3wEPPEpLc1oXbAorLEQbtdPVFRnjrySuUPqejaW27MDiWmxntW%2BNKpuFqrFIimFQJsnUEaLJ9txRwDZCA0W4vptDHjo9rQoK2q3TfMK38n0Tj4F6oY9AFFfoB3%2BOhmOqc0rQikJVful2Igl4%3D; mbox=PC#122fc9ed0cd34b3d95e257b21817afe4.17_80#1541530570|session#ed647dd0463d464a99328fb9095a77f8#1536292515; ADRUM_BTa=R:52|g:a1226939-9a11-4470-959a-588120eef615|n:customer1_acb14d98-cf8b-4f6d-8860-1c1af7831070; ADRUM_BT1=R:52|i:14049|e:218; utag_main=v_id:015ed4d1af5a0017e3d97706b96505079001d07100fb8$_sn:131$_ss:0$_st:1536292455318$vapi_domain:lds.org$dc_visit:131$ses_id:1536288669851%3Bexp-session$_pn:3%3Bexp-session$dc_event:7%3Bexp-session$dc_region:us-east-1%3Bexp-session; t_ppv=undefined%2C100%2C51%2C1218%2C13817; s_sq=ldsall%3D%2526pid%253Dhttps%25253A%25252F%25252Flcr.lds.org%25252Freport%25252Fmembers-moved-in%25253Flang%25253Deng%2526oid%253Dhttps%25253A%25252F%25252Flcr.lds.org%25252Forgs%25252F5873015%25253Flang%25253Deng%2526ot%253DA' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: application/json, text/plain, */*' -H 'cache-control: no-cache' -H 'authority: lcr.lds.org' -H 'referer: https://lcr.lds.org/orgs/5873015?lang=eng' --compressed`,
       members: [],
       offices: [],
       newRecords: [],
@@ -96,6 +117,8 @@ export default {
       memberName: 'name',
       memberPhoto: '',
       memberPhotos: [],
+      memberInfo: null,
+      selectedActiveTab: 'details', 
     }
   },
   computed: {
@@ -142,16 +165,45 @@ export default {
       });
       this[listName] = newList;
 		},
+    formattedAddress: function(address) {
+      const { addr1, addr2, addr3 } = address;
+      return [addr1, addr2, addr3].join(" ");
+    },
+    formattedPhone: function(phone) {
+      const cleanPhone = phone.toString().replace(/^\W+/, '').replace(/\W+$/, '');
+      return ` <a href="tel:${cleanPhone}">${cleanPhone}</a> `;
+    },
+    formattedEmail: function(email) {
+      const cleanEmail = email.toString().replace(/^\W+/, '').replace(/\W+$/, '');
+      return ` <a href="mailto:${cleanEmail}">${cleanEmail}</a> `;
+    },
 
     createNotes: function() {
-      createNotes('Vezzani, David & Juventa', (err, res) => {
-        console.log("createNotes", err, res);
+      this.selectedMembers.forEach(member => {
+        this.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), memberId: member.id, refresh: true, redirect: 'sendShellCommand:fetchFamilyDetails:createNotes:done'});
       });
     },
     fetchMembers: function(refresh = true) {
       const source = (refresh) ? "lds.org" : "cache or lds.org";
       this.toastMessage('fetched', `Fetching data from ${source}.  Please wait...`)
 			this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand), refresh});
+		},
+    fetchFamilyDetailsBatch: function(event, refresh = true) {
+      const self = this;
+      const increment = 3000
+      let offset = 0
+      this.selectedMembers.forEach(member => {
+        offset += increment;
+        setTimeout(() => {
+          console.log(`fetching member.id: ${member.id}`)
+          self.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(self.fetchCommand), memberId: member.id, refresh: (refresh === true)});
+        }, offset);
+      });
+		},
+    fetchPhotoFile: function(memberId, photoUrl) {
+      const self = this;
+      console.log(`fetching fetchPhotoFile for memberId: ${memberId}`)
+      self.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(self.fetchCommand), memberId, photoUrl, refresh: true});
 		},
     fetchFamilyDetails: function(event, refresh = true) {
       console.log("this.selectedMembers", this.selectedMembers[0].id);
@@ -203,16 +255,45 @@ export default {
       }
 		  console.log('db:members:archive:done', data);
     },
+    "sendShellCommand:fetchPhotoFile:done": function(data){
+      console.log("sendShellCommand:fetchPhotoFile:done", data);
+    },
+    "sendShellCommand:fetchFamilyDetails:createNotes:done": function(data){
+      const familyDetails = JSON.parse(data.json);
+      console.log("sendShellCommand:fetchFamilyDetails:createNotes:done", familyDetails);
+
+      createNotes(familyDetails.coupleName, (err, res) => {
+        console.log("createNotes", err, res);
+        this.toastMessage('actions', `Notes created: <a target="_new" href="https://docs.google.com/document/d/${res.body.apiRes.data.id}/edit">${familyDetails.coupleName}</a>`);
+      });
+    },
     "sendShellCommand:fetchFamilyDetails:done": function(data){
       console.log("sendShellCommand:fetchFamilyDetails:done", data);
       const memberDetails = JSON.parse(data.json);
       console.log("memberDetails", memberDetails);
+      this.memberInfo = memberDetails;
+
+      {
+        setTimeout(() => {this.fetchPhotoFile(data.memberId, memberDetails.headOfHousehold.photoUrl);}, 3000);
+      }
 
       this.memberPhotos.length = 0;
-      if (memberDetails.headOfHousehold) this.memberPhotos.push(memberDetails.headOfHousehold.photoUrl);
-      if (memberDetails.spouse) this.memberPhotos.push(memberDetails.spouse.photoUrl);
-      if (memberDetails.householdInfo) this.memberPhotos.push(memberDetails.householdInfo.photoUrl);
-      memberDetails.otherHouseholdMembers.forEach(other => this.memberPhotos.push(other.photoUrl));
+      if (memberDetails.headOfHousehold) {
+        const { name, photoUrl } = memberDetails.headOfHousehold;
+        if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      }
+      if (memberDetails.spouse) {
+        const { name, photoUrl } = memberDetails.spouse;
+        if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      }
+      if (memberDetails.householdInfo) {
+        const { name, photoUrl } = memberDetails.householdInfo;
+        if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      }
+      memberDetails.otherHouseholdMembers.forEach(other => {
+        const { name, photoUrl } = other;
+        if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      });
 
       // this.memberPhoto = (memberDetails.headOfHousehold.individualId === data.memberId) ? memberDetails.headOfHousehold.photoUrl : memberDetails.spouse.photoUrl;
     },
@@ -245,5 +326,17 @@ export default {
   width: 150px;
   display: inline-block;
   margin: 5px;
+}
+p.title {
+  font-size: 14pt;
+  font-weight: bold;
+}
+.member-info {
+  margin: 1em 0;
+}
+.member-info div, 
+.xtabs, 
+.xtabs * {
+  text-align: left; 
 }
 </style>

@@ -50,7 +50,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-const cachedDataDir = "./data";
+const cachedDataDir = "../data";
 fs.access(cachedDataDir, (err) => {
   if (err) fs.mkdir(cachedDataDir);
 });

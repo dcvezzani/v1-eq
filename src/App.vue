@@ -9,7 +9,8 @@
     </div>
     <div class="router-links">
       <router-link to="/Members">Members</router-link> | 
-      <router-link to="/Families">Families</router-link>
+      <router-link to="/Families">Families</router-link> | 
+      <router-link to="/Yearbook">Yearbook</router-link>
     </div>
 
     <router-view/>

@@ -1,12 +1,12 @@
 import socketIo from 'socket.io';
+import { V1_CACHE_DIR } from './constants';
 import { sendShellCommand } from './src/actions/shell';
-import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies } from './src/helpers/members';
+import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies } from './src/helpers/members';
+import fs from 'fs';
 
 const reportError = (client, err, msg) => {
 	client.emit('error', err, msg);
 };
-
-const V1_CACHE_DIR = '/Users/davidvezzani/projects/v1-eq/be/data'; // todo: move to external config
 
 const outputPath = (type) => {
   return `${V1_CACHE_DIR}/v1-eq-${type}-cache.json`;
@@ -28,15 +28,46 @@ const getLdsCookie = (cmd) => {
   return cookie;
 };
 
+const logMemberDetails = (member) => {
+  const { name, photoUrl } = member;
+  return ({ name, photoUrl });
+};
+
+const logPhoto = (responsePayload) => {
+  const stream = fs.createWriteStream(`${V1_CACHE_DIR}/photos.json`, {flags:'a'});
+  const memberDetails = JSON.parse(responsePayload.stdout);
+
+  const members = []
+  if (memberDetails.headOfHousehold && memberDetails.headOfHousehold.photoUrl) members.push(logMemberDetails(memberDetails.headOfHousehold))
+  // if (memberDetails.spouse && memberDetails.spouse.photoUrl) members.push(logMemberDetails(memberDetails.spouse))
+  // if (memberDetails.householdInfo && memberDetails.householdInfo.photoUrl) members.push(logMemberDetails(memberDetails.householdInfo))
+  //
+  // if (memberDetails.otherHouseholdMembers)
+  // memberDetails.otherHouseholdMembers.forEach(other => {
+  //   if (other.photoUrl) members.push(logMemberDetails(other))
+  // });
+  
+  stream.write(JSON.stringify(members).replace(/\]/, ',').replace(/\[/, ''));
+  stream.end();
+}
+
 const sendShellCommandWithType = (client, type, data, callback) => {
   // console.log(`${type}: ${JSON.stringify(data).slice(0,200)}...`);
   const label = type.replace(/\w/, c => c.toUpperCase());
-  const ioAction = `sendShellCommand:${type}:done`;
+  const ioAction = (data.redirect) ? data.redirect : `sendShellCommand:${type}:done`;
   console.log(`sendShellCommandWithType`, data);
 
   if (type === 'fetchFamilyDetails') {
     // data.cmd = Buffer.from(createFetchFamilyDetailsCmd("3676616600", getLdsCookie(data.cmd))).toString('base64');
     data.cmd = Buffer.from(createFetchFamilyDetailsCmd(data.memberId, getLdsCookie(data.cmd))).toString('base64');
+  }
+  if (type === 'fetchPhotoFile') {
+    // data.cmd = Buffer.from(createFetchFamilyDetailsCmd("3676616600", getLdsCookie(data.cmd))).toString('base64');
+
+    if (data.photoUrl && data.photoUrl.length > 0)
+      data.cmd = Buffer.from(createFetchLdsFileCmd(data.memberId, data.photoUrl)).toString('base64');
+    else
+      data.cmd = Buffer.from(createPlaceholderPhotoCmd(data.memberId)).toString('base64');
   }
 
   sendShellCommand({...data, cachePath: outputPath(type)}, (errRaw, data2) => {
@@ -48,10 +79,13 @@ const sendShellCommandWithType = (client, type, data, callback) => {
 
     const { cmd, err, stdout, stderr } = data2;
     const responsePayload = {err: (err || null), msg, cmd, stdout, stderr};
+
     if (callback) return callback({...data, ...responsePayload}, (err, data) => {
+      if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
       return client.emit(data.ioAction || ioAction, data.responsePayload || responsePayload);
     });
 
+    if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
     client.emit(ioAction, responsePayload);
   });
 }
@@ -78,14 +112,23 @@ export const io = (server) => {
 		client.on('sendShellCommand:fetchMembers', function(data) { sendShellCommandWithType(client, 'fetchMembers', data, fetchMemberSyncReport); });
 		client.on('sendShellCommand:fetchFamilyDetails', function(data) { sendShellCommandWithType(client, 'fetchFamilyDetails', data, fetchFamilyDetails); });
 		client.on('sendShellCommand:fetchFamilies', function(data) { sendShellCommandWithType(client, 'fetchFamilies', data, fetchFamilies); });
+		client.on('sendShellCommand:fetchPhotoFile', function(data) { sendShellCommandWithType(client, 'fetchPhotoFile', data, fetchPhotoFile); });
 
 		client.on('db:members:import', function(data) { handleAction(client, 'db:members:import:done', data, importMembers); });
 		client.on('db:members:archive', function(data) { handleAction(client, 'db:members:archive:done', data, archiveMembers); });
 		client.on('db:members:importFamilies', function(data) { handleAction(client, 'db:members:importFamilies:done', data, importFamilies); });
+		client.on('db:members:fetchFamilies', function(data) { handleAction(client, 'db:members:fetchFamilies:done', data, ybFetchFamilies); });
 	});
 
 };
 
+const createFetchLdsFileCmd = (memberId, fileUrl) => {
+return `curl '${fileUrl}' -H 'authority: www.lds.org' -H 'cache-control: max-age=0' -H 'upgrade-insecure-requests: 1' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' -H 'referer: https://www.lds.org/directory/?lang=eng' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' > ${V1_CACHE_DIR}/photos-cache/${memberId}`
+};
+
+const createPlaceholderPhotoCmd = (memberId) => {
+return `cp ${V1_CACHE_DIR}/../person-placeholder.jpg ${V1_CACHE_DIR}/photos-cache/${memberId}`
+};
 
 const createFetchFamilyDetailsCmd = (memberId, cookie) => {
 return `curl 'https://www.lds.org/directory/services/web/v3.0/mem/householdProfile/${memberId}?imageSize=MEDIUM' -H $'cookie: ${cookie}' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: application/json, text/javascript, */*; q=0.01' -H 'referer: https://www.lds.org/directory/?lang=eng' -H 'authority: www.lds.org' -H 'x-requested-with: XMLHttpRequest' --compressed`;

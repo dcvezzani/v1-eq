@@ -18,6 +18,8 @@ export const fetchFamilyDetails = (data, callback) => {
   callback(null, {responsePayload: { json: data.stdout, memberId: data.memberId }});
 };
 
+export const fetchPhotoFile = fetchFamilyDetails;
+
 export const fetchFamilies = (data, callback) => {
   if (data.err) return callback(data.err);
   callback(null, {responsePayload: { ...data, removedIds: [], newRecords: [] }});
@@ -86,6 +88,14 @@ export const importFamilies = (data, callback) => {
     const families = JSON.parse(data);
     // return callback(Error(`wip`), families);
     processFamilies({families}, callback);
+  });
+};
+
+export const ybFetchFamilies = (data, callback) => {
+  Member.allNotArchived((err, rows) => {
+    if (err) return callback(err);
+
+    callback(err, {responsePayload: rows});
   });
 };
 

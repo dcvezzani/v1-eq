@@ -2,6 +2,7 @@ const fs = require('fs');
 const readline = require('readline');
 const moment = require('moment');
 const {google} = require('googleapis');
+import { V1_CACHE_DIR } from '../../constants';
 
 // If modifying these scopes, delete credentials.json.
 const SCOPES = ['https://www.googleapis.com/auth/drive'];
@@ -114,7 +115,7 @@ function copyFile(auth) {
 function uploadFile(auth, data, callback) {
   const drive = google.drive({version: 'v3', auth});
 
-  let documentHtml = fs.readFileSync('./data/20180805-test.html');
+  let documentHtml = fs.readFileSync(`${V1_CACHE_DIR}/20180805-test.html`);
   const familyName = data.name;
   const currentDate = moment().format('M/D');
   documentHtml = documentHtml.toString().replace(/__NAME__/, familyName).replace(/__DATE__/, currentDate);
