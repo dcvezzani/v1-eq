@@ -9,7 +9,7 @@
               <i class="fas fa-search"></i>
             </span>
             
-            <p><a @click="selectItems(true)">All</a> | <a @click="selectItems(false)">None</a></p>
+            <p><a @click="selectItems(true)">All</a> | <a @click="selectItems(false)">None</a> | <a @click="clearList">Clear</a></p>
           </div>
           <div class="control">
             <a @click="pressEnter" class="button">
@@ -53,6 +53,7 @@ export default {
       search: '',
       mode: 'move', // move | stage
       filteredList: [],
+      checkedList: [],
     }
   },
   computed: {
@@ -99,9 +100,23 @@ export default {
       const reFilter = new RegExp(term, 'i');
       this.filteredList = this.members.filter(m => m[this.memberListItemName].match(reFilter));
 		},
-    memberChecked: function(member) {
+    memberChecked: function({member, checked}) {
       console.log("member checked", member, this.mode);
       if (this.mode === 'move') return this.$emit("moveMembers", {listName: this.listName, memberIds: [member[this.memberListItemId]]});
+      else {
+        if (checked) this.checkedList.push(member);
+        else this.checkedList = this.checkedList.filter(listMember => listMember.id !== member.id);
+      }
+		},
+    clearList: function() {
+      console.log("clear list", this.mode);
+
+      // clearFilter(true)
+      // this.mode = 'move';
+      // this.filteredList.length = 0;
+      return this.$emit("moveMembers", {listName: this.listName, memberIds: this.members.map(member => member.id)});
+      
+      // if (this.mode === 'move') return this.$emit("moveMembers", {listName: this.listName, memberIds: [member[this.memberListItemId]]});
 		},
   },
   sockets:{
@@ -114,6 +129,11 @@ export default {
 		window.Event.$on('MemberList:activate', (data) => {
 		  console.log('MemberList:blah', data);
 			window.Event.$emit('MemberList:activated', {msg: 'done'});
+		});
+
+		window.Event.$on('MemberList:clear', () => {
+		  console.log('MemberList:clear');
+      this.clearList();
 		});
 
     window.Event.$on('MemberList:filterList', (listName) => {
@@ -152,6 +172,9 @@ export default {
     },
     filteredList: function (newValue, oldValue) {
       if (newValue.length === 0) this.search = '';
+    },
+    checkedList: function (newValue, oldValue) {
+      if (this.mode === 'stage') window.Event.$emit('Members:checkedList', this.listName, this.checkedList);
     },
   },
 }

@@ -2,7 +2,7 @@ import socketIo from 'socket.io';
 import { V1_CACHE_DIR } from './constants';
 import { sendShellCommand } from './src/actions/shell';
 import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies } from './src/helpers/members';
-import { allTags, createTag, applyTags } from './src/helpers/tags';
+import { allTags, createTag, applyTags, loadTagMemberIds, deleteTag, removeMembers } from './src/helpers/tags';
 import fs from 'fs';
 import Member from './src/models/members-02';
 import Tag from './src/models/tags';
@@ -26,9 +26,10 @@ const outputPath = (type) => {
 }; 
 
 const handleAction = (client, ioResponse, data, handler) => {
+  console.log(">>>handleAction", data);
   handler(data, (err, handlerData) => {
     console.log("ioResponse", ioResponse, {err, ...handlerData})
-    if (err) return client.emit(ioResponse, {err: err.toString(), ...handlerData});
+    if (err) return client.emit(ioResponse, {err, ...handlerData});
     client.emit(ioResponse, handlerData);
   });
 };
@@ -135,6 +136,9 @@ export const io = (server) => {
 		client.on('db:tags:all', function(data) { handleAction(client, 'db:tags:all:done', data, allTags); });
 		client.on('db:tags:create', function(data) { handleAction(client, 'db:tags:create:done', data, createTag); });
 		client.on('db:tags:apply', function(data) { handleAction(client, 'db:tags:apply:done', data, applyTags); });
+		client.on('db:tags:loadMembers', function(data) { handleAction(client, 'db:tags:loadMembers:done', data, loadTagMemberIds); });
+		client.on('db:tags:delete', function(data) { handleAction(client, 'db:tags:delete:done', data, deleteTag); });
+		client.on('db:tags:removeMembers', function(data) { handleAction(client, 'db:tags:removeMembers:done', data, removeMembers); });
 	});
 
 };

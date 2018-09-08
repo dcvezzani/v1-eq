@@ -53,7 +53,7 @@ export default {
   watch: {
     checked: function (newValue, oldValue) {
       this.member.selected = newValue;
-      this.$emit("checked", this.member);
+      this.$emit("checked", {member: this.member, checked: newValue});
     }
   },
 
