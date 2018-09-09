@@ -6,6 +6,29 @@ export const allTags = (data, callback) => {
   });
 };
 
+export const createTagGroups = (data, callback) => {
+  const { groups } = data;
+  const tagNames = Object.keys(groups);
+
+  for(let idx=0; idx<tagNames.length; idx+=1) {
+    const tagName = tagNames[idx];
+    const memberIds = groups[tagName]
+    createTag({name: tagName, memberIds}, (err) => {
+      if (err) return callback(err);
+    })
+  }
+
+  callback(null, {responsePayload: data});
+};
+
+export const fetchMembers = (data, callback) => {
+  const { pattern } = data;
+  console.log(">>>fetchMembers");
+  Tag.groupedByMembers(pattern, (err, rows) => {
+    callback(err, {responsePayload: rows});
+  });
+};
+
 export const deleteTag = (data, callback) => {
   const { name } = data;
   Tag.remove(name, (err, rows) => {

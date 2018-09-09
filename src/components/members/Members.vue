@@ -74,7 +74,11 @@
                     </span>
                   </div>
                   <div class="control">
-                    <a @click="selectRandomMembers" class="button">
+                    <input class="input is-rounded" type="text" v-model="groupPrefix">
+
+                  </div>
+                  <div class="control">
+                    <a @click="selectRandomMembersWithTagPrefix" class="button">
                       <span class="icon is-small">
                         <i class="fas fa-magic"></i>
                       </span>
@@ -183,7 +187,7 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
-      fetchCommand: `curl 'https://lcr.lds.org/services/orgs/sub-orgs-with-callings?lang=eng&subOrgId=5873015' -H 'pragma: no-cache' -H $'cookie: audience_split=64; aam_uuid=63419155236752781521446756028120250735; lds-preferred-lang-v2=eng; audience_id=501805; WRUID=1640016059515610; aam_tnt=aam%3D662001; aam_sc=aamsc%3D662001%7C708195%7C855179%7C662001; lds-preferred-lang=eng; _CT_RS_=Recording; __CT_Data=gpv=178&apv_310_www11=3&cpv_310_www11=3&ckp=tld&dm=lds.org&apv_59_www11=175&cpv_59_www11=175&rpv_59_www11=174; ctm={\'pgv\':1003506360507272|\'vst\':999856181377944|\'vstr\':4158988253884699|\'intr\':1535408490233|\'v\':1|\'lvst\':1242}; cr-aths=shown; check=true; s_cc=true; audience_s_split=100; AMCVS_66C5485451E56AAE0A490D45%40AdobeOrg=1; AMCV_66C5485451E56AAE0A490D45%40AdobeOrg=1099438348%7CMCIDTS%7C17781%7CMCMID%7C63648270562000236141460435237579820057%7CMCAAMLH-1536523066%7C9%7CMCAAMB-1536797566%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1536199966s%7CNONE%7CMCAID%7CNONE%7CMCSYNCSOP%7C411-17784%7CvVersion%7C2.1.0; amlbcookie=74; JSESSIONID=0; ADRUM=s=1536208258965&r=https%3A%2F%2Fwww.lds.org%2F%3F479231918; s_ppvl=https%253A%2F%2Fwww.lds.org%2Fdirectory%2F%253Flang%253Deng%2C98%2C89%2C1122%2C1182%2C1122%2C2560%2C1440%2C1%2CL; s_ppv=https%253A%2F%2Fwww.lds.org%2Fdirectory%2F%253Flang%253Deng%2523%2C98%2C89%2C1122%2C1182%2C1122%2C2560%2C1440%2C1%2CL; mbox=PC#122fc9ed0cd34b3d95e257b21817afe4.17_80#1541530570|session#a62e803be4eb412086b84c02aecd3973#1536325343; s_sq=%5B%5BB%5D%5D; utag_main=v_id:015ed4d1af5a0017e3d97706b96505079001d07100fb8$_sn:133$_ss:0$_st:1536325283931$vapi_domain:lds.org$dc_visit:133$ses_id:1536323482893%3Bexp-session$_pn:1%3Bexp-session$dc_event:2%3Bexp-session$dc_region:us-east-1%3Bexp-session; t_ppv=undefined%2C100%2C93%2C1122%2C86503661; TS01b89640=01999b7023120af95c27cbfbff272b562025b699126e15347f34f99c380e96ab2288dac2a20e6f1710a951dbdf13847eaf634c5a549f3f6359e6826d55ee6a819ea26247c2; lds-id=AQIC5wM2LY4SfcxBuHlYNi_9IoZqmJ81qth1sLcuP252wi4.*AAJTSQACMDIAAlNLABMyMTcyNjY3Nzk0ODY5MjYyMTk3AAJTMQACMDQ.*; __VCAP_ID__=9d9d579b-720d-4574-4fea-9243; ObSSOCookie=aAnSA8V7QsoBdZfuaWT9luGwEaO33hyLvG3%2FfaMrdKnDlsU%2BIpMBn18dvZ4Xz8Du7jWequgSZQpdlOsOq1E65YmBC4JQIY4v0Zy32%2BWsOr4Y1vNpyI%2F78a6B2aIB%2BxzB55Q0DTK3my9heNPXDCrZPd5PAKbEuDb9Xv0La0yeKmLLWcphCHNWYkvHOGL8pwIf2QpshpIrc0jkxh4PXIfIQlqkBmDYVeSrK5qQVNFLnyzq0Y9mkaJM0hn8XCq4pcF%2B1dGDuH9EQT3VCeXmZ9sVEIezSgTjlpWWISYhR7P%2BKksW52LEKAPGKlBDUmNpdMFgVVEQ4FigosTukwDSBrZlnqBP640V72CTmC2A7eCuJu4%3D; ADRUM_BTa=R:0|g:2a119f93-41e0-4696-9173-348b8b08fd12|n:customer1_acb14d98-cf8b-4f6d-8860-1c1af7831070; ADRUM_BT1=R:0|i:14049|e:191' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: application/json, text/plain, */*' -H 'cache-control: no-cache' -H 'authority: lcr.lds.org' -H 'referer: https://lcr.lds.org/orgs/5873015?lang=eng' --compressed`,
+      fetchCommand: ``,
       members: [],
       offices: [],
       newRecords: [],
@@ -217,6 +221,7 @@ export default {
       checkedLists: {},
       currentListName: '',
       availableMembersCnt: 0,
+      groupPrefix: '',
     }
   },
   computed: {
@@ -383,6 +388,27 @@ export default {
       const memberIds = _.shuffle(unselectedMemberIds).slice(0, this.randomMemberCount);
       this.moveMembers({listName: 'unselectedMembers', memberIds});
     },
+    selectRandomMembersWithTagPrefix: function(event) {
+      console.log("selectRandomMembersWithTagPrefix");
+      let memberGroups = {}
+      let availableMembers = _.shuffle(this.unselectedMembers.filter(member => !member.hidden));
+      let idx = 0;
+
+      while(availableMembers.length > 0) {
+        idx += 1;
+        const memberIds = availableMembers.slice((-1)*this.randomMemberCount).map(member => member.id);
+        availableMembers.forEach(member => member['hidden'] = true);
+        availableMembers.length -= (this.randomMemberCount < this.availableMembersCnt) ? this.randomMemberCount : this.availableMembersCnt;
+
+        memberGroups[`${this.groupPrefix}-${_.padStart(idx, 2, '0')}`] = memberIds;
+        this.availableMembersCnt = availableMembers.length;
+        console.log("this.availableMembersCnt", this.availableMembersCnt);
+        console.log("availableMembers.length", availableMembers.length);
+      }
+
+      this.$socket.emit('db:tags:createTagGroups', {groups: memberGroups});
+      // this.moveMembers({listName: 'unselectedMembers', memberIds});
+    },
     hideMembers: function() {
       const checkedExplicitMembers = this.checkedListsAll();
       const checkedMembers = (checkedExplicitMembers.length > 0) ? checkedExplicitMembers : this.selectedMembers;
@@ -396,6 +422,15 @@ export default {
     }, 
   },
   sockets:{
+    "db:tags:db:tags:createTagGroups:done": function(data){
+		  console.log('db:tags:db:tags:createTagGroups:done', data);
+      if (data.err) {
+        this.messages.actions = JSON.stringify(data);
+      } else {
+        this.toastMessage('actions', `Successfully created member groups`);
+      }
+			this.$socket.emit('db:tags:all');
+    },
     "db:tags:removeMembers:done": function(data){
 		  console.log('db:tags:removeMembers:done', data.responsePayload.tags, data);
       if (data.err) {

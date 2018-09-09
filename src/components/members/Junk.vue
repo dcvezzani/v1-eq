@@ -84,6 +84,9 @@
 </template>
 
 <script>
+import WardMembers from '@/components/members/WardMembers';
+import FamilyVisits from '@/components/members/FamilyVisits';
+import Chairs from '@/components/members/Chairs';
 import Yearbook from '@/components/members/Yearbook';
 import Families from '@/components/members/Families';
 import Members from '@/components/members/Members';
@@ -92,7 +95,7 @@ import ListRoles from '@/components/ListRoles';
 import ListMembers from '@/components/ListMembers';
 import FormatVisitRequest from '@/components/FormatVisitRequest';
 export default {
-  components: { Yearbook, Families, Members, Index, ListRoles, ListMembers, FormatVisitRequest,},
+  components: { WardMembers, FamilyVisits, Chairs, Yearbook, Families, Members, Index, ListRoles, ListMembers, FormatVisitRequest,},
   name: 'HelloWorld',
   data () {
     return {

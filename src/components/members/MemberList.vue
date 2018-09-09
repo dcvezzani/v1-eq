@@ -101,7 +101,7 @@ export default {
       this.filteredList = this.members.filter(m => m[this.memberListItemName].match(reFilter));
 		},
     memberChecked: function({member, checked}) {
-      console.log("member checked", member, this.mode);
+      console.log("member checked", member, this.mode, this.memberListItemId);
       if (this.mode === 'move') return this.$emit("moveMembers", {listName: this.listName, memberIds: [member[this.memberListItemId]]});
       else {
         if (checked) this.checkedList.push(member);

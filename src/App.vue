@@ -2,15 +2,22 @@
   <div id="app">
     <!-- img src="./assets/logo.png" -->
 
-    <div class="router-links">
-      <router-link to="/">FormatVisitRequest</router-link> |
-      <router-link to="/ListMembers">ListMembers</router-link> |
-      <router-link to="/ListRoles">ListRoles</router-link>
-    </div>
-    <div class="router-links">
-      <router-link to="/Members">Members</router-link> | 
-      <router-link to="/Families">Families</router-link> | 
-      <router-link to="/Yearbook">Yearbook</router-link>
+    <div class="router-links-container" style="">
+      <div class="router-links">
+        <router-link to="/">FormatVisitRequest</router-link> |
+        <router-link to="/ListMembers">ListMembers</router-link> |
+        <router-link to="/ListRoles">ListRoles</router-link>
+      </div>
+      <div class="router-links">
+        <router-link to="/Members">Members</router-link> | 
+        <router-link to="/Families">Families</router-link> | 
+        <router-link to="/Yearbook">Yearbook</router-link> |
+        <router-link to="/FamilyVisits">FamilyVisits</router-link> |
+        <router-link to="/Chairs">Chairs</router-link>
+      </div>
+      <div class="router-links">
+        <router-link to="/WardMembers">WardMembers</router-link>
+      </div>
     </div>
 
     <router-view/>
