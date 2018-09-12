@@ -20,27 +20,6 @@ export const fetchFamilyDetails = (data, callback) => {
 
 export const fetchPhotoFile = fetchFamilyDetails;
 
-export const fetchMemberListSummary = (data, callback) => {
-  if (data.err) return callback(data.err);
-  let members = []
-  try {
-    members = JSON.parse(data.stdout);
-
-    members.forEach(member => {
-      let memberId = (member.headOfHouseIndividualId > -1) ? member.headOfHouseIndividualId : null;
-      if (memberId === null) memberId = (member.headOfHouse.individualId > -1) ? member.headOfHouse.individualId : null;
-      if (memberId === null) memberId = (member.spouse.individualId > -1) ? member.spouse.individualId : null;
-
-      member['id'] = memberId;
-    });
-    callback(null, {responsePayload: { members, memberId: data.memberId }});
-
-  } catch (err) {
-    callback(Error(`Unable to parse json; lds cookie expired?`));
-  }
-
-};
-
 export const fetchFamilies = (data, callback) => {
   if (data.err) return callback(data.err);
   callback(null, {responsePayload: { ...data, removedIds: [], newRecords: [] }});
@@ -49,6 +28,7 @@ export const fetchFamilies = (data, callback) => {
 export const fetchMemberSyncReport = (data, callback) => {
   if (data.err) return callback(data.err);
   
+  console.log(">>>data.stdout", data.stdout);
   Member.allNotArchived((err, rows) => {
     if (err) return callback(err);
 

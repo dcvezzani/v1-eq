@@ -126,6 +126,12 @@ export default {
       this[listName] = newList;
       this.checkedLists = {};
 		},
+    importMembers: function() {
+			this.$socket.emit('db:wardMembers:import', {members: this.newRecords, offices: this.offices});
+    }, 
+    archiveMembers: function() {
+			this.$socket.emit('db:wardMembers:archive', {memberIds: this.removedIds});
+    }, 
   },
   sockets:{
     "WardMembers:blah": function(data){
@@ -135,17 +141,35 @@ export default {
     "sendShellCommand:fetchMemberListSummary:done": function(data){
 		  console.log('sendShellCommand:fetchMemberListSummary:done', data);
       if (data.err) return console.error(data.err);
-      // this.members = JSON.parse(data.json);
       this.members = data.members;
-      // this.newRecords = data.newRecords || [];
-      // this.removedIds = data.removedIds || [];
+      this.newRecords = data.newRecords || [];
+      this.removedIds = data.removedIds || [];
 
-      // const diffRecordsLength = this.newRecords.length + this.removedIds.length;
-      // this.toastMessage('fetched', `Successful fetch.  ${(diffRecordsLength === 0) ? 'Local records are already synched.' : 'Updates found.'}`);
-      this.toastMessage('fetched', `Successful fetch`);
+      const diffRecordsLength = this.newRecords.length + this.removedIds.length;
+      this.toastMessage('fetched', `Successful fetch.  ${(diffRecordsLength === 0) ? 'Local records are already synched.' : 'Updates found.'}`);
 
       this.unselectedMembers = this.members;
 			window.Event.$emit('MemberList:update');
+    },
+    "db:wardMembers:import:done": function(data){
+      this.fetchMembers(false);
+      
+      if (data.err) {
+        this.messages.import = JSON.stringify(data.err);
+      } else {
+        this.toastMessage('import', `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`);
+        this.$socket.emit('sendShellCommand:fetchMemberListSummary', {cmd: ''});
+      }
+		  console.log('db:wardMembers:import:done', data);
+    },
+    "db:wardMembers:archive:done": function(data){
+      if (data.err) {
+        this.messages.archive = JSON.stringify(data.err);
+      } else {
+        this.toastMessage('archive', `Successful archival; ${JSON.stringify(data.payload).slice(0,100)}...`);
+        this.$socket.emit('sendShellCommand:fetchMemberListSummary', {cmd: ''});
+      }
+		  console.log('db:wardMembers:archive:done', data);
     },
   },
   mounted () {

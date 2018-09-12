@@ -1,7 +1,8 @@
 import socketIo from 'socket.io';
 import { V1_CACHE_DIR } from './constants';
 import { sendShellCommand } from './src/actions/shell';
-import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies, fetchMemberListSummary } from './src/helpers/members';
+import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies } from './src/helpers/members';
+import { fetchMemberListSummary, importMembers as importWardMembers, archiveMembers as archiveWardMembers } from './src/helpers/ward_members';
 import { allTags, createTag, applyTags, loadTagMemberIds, deleteTag, removeMembers, fetchMembers as fetchTagMembers, createTagGroups } from './src/helpers/tags';
 import fs from 'fs';
 import Member from './src/models/members-02';
@@ -107,15 +108,16 @@ const sendShellCommandWithType = (client, type, data, callback) => {
     let msg = `${label} was activated`
     if (errRaw) {
       msg = `${label} was NOT activated`;
-      return client.emit(data.ioAction || ioAction, {...data2, msg: errRaw.message});
+      return client.emit(data2.ioAction || ioAction, {...data2, msg: errRaw.message});
     }
 
     const { cmd, err, stdout, stderr } = data2;
     const responsePayload = {err: (err || null), msg, cmd, stdout, stderr};
 
-    if (callback) return callback({...data, ...responsePayload}, (err, data) => {
+    if (callback) return callback({...data, ...responsePayload}, (err, data3) => {
       if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
-      return client.emit(data.ioAction || ioAction, data.responsePayload || responsePayload);
+      console.log(">>>data", data, err, data3);
+      return client.emit(data3.ioAction || ioAction, data3.responsePayload || responsePayload);
     });
 
     if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
@@ -153,6 +155,9 @@ export const io = (server) => {
 		client.on('db:members:importFamilies', function(data) { handleAction(client, 'db:members:importFamilies:done', data, importFamilies); });
 		client.on('db:members:fetchFamilies', function(data) { handleAction(client, 'db:members:fetchFamilies:done', data, ybFetchFamilies); });
 
+		client.on('db:wardMembers:import', function(data) { handleAction(client, 'db:wardMembers:import:done', data, importWardMembers); });
+		client.on('db:wardMembers:archive', function(data) { handleAction(client, 'db:wardMembers:archive:done', data, archiveWardMembers); });
+    
 		client.on('db:tags:all', function(data) { handleAction(client, 'db:tags:all:done', data, allTags); });
 		client.on('db:tags:create', function(data) { handleAction(client, 'db:tags:create:done', data, createTag); });
 		client.on('db:tags:apply', function(data) { handleAction(client, 'db:tags:apply:done', data, applyTags); });
