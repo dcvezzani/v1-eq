@@ -16,6 +16,54 @@ const fetchWardMemberSyncReport = (members, callback) => {
   });
 };
 
+const mergeContactInfo = (dst, src) => {
+  let dst2 = {};
+  const dstInfo = (src) ? contactInformationFor(dst) : {};
+  const srcInfo = (src) ? contactInformationFor(src) : {};
+
+  dst2.email = (dstInfo.email && dstInfo.email.length > 0) ? dstInfo.email : srcInfo.email;
+  dst2.phone = (dstInfo.phone && dstInfo.phone.length > 0) ? dstInfo.phone : srcInfo.phone;
+  dst2.address = (dstInfo.address && dstInfo.address.length > 0) ? dstInfo.address : srcInfo.address;
+  return dst2;
+};
+
+const contactInformationFor = (data) => {
+  const { email, phone } = data;
+  let attrs = { email, phone };
+  if (data.address) {
+    const { addr1, addr2, addr3 } = data.address;
+    attrs.address = `${addr1} ${addr2} ${addr3}`;
+  }
+  return attrs;
+};
+
+export const updateContactInfo = (data, callback) => {
+  if (data.err) return callback(data.err);
+  const memberInfo = JSON.parse(data.stdout);
+  // const contactInfo = contactInformationFor(memberInfo.headOfHousehold);
+  let contactInfo = mergeContactInfo(memberInfo.headOfHousehold, memberInfo.spouse)
+  contactInfo = mergeContactInfo(contactInfo, memberInfo.householdInfo)
+
+  WardMember.updateMemberContactInfo(data.memberId, contactInfo, (err) => {
+    callback(err, {responsePayload: { json: data.stdout, memberId: data.memberId }});
+  });
+};
+
+export const getPhotoUrl = (data, callback) => {
+  console.log(">>>getPhotoUrl, data", data)
+  if (data.err) return callback(data.err);
+  callback(null, {responsePayload: { json: data.stdout, memberId: data.memberId }});
+};
+
+export const fetchWardFamilies = (data, callback) => {
+  WardMember.allNotArchivedWithTags('family-visits-alpha-', (err, rows) => callback(err, {responsePayload: rows}))
+};
+
+export const fetchWardFamiliesNotVisited = (data, callback) => {
+  // WardMember.allNotArchived((err, rows) => callback(err, {responsePayload: rows}))
+  WardMember.allNotArchivedWithOutTag('visited', (err, rows) => callback(err, {responsePayload: rows}))
+};
+
 export const fetchMemberListSummary = (data, callback) => {
   if (data.err) return callback(data.err);
   let members = []

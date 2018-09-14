@@ -7,6 +7,7 @@ const reportError = (callback, trx, msg, err, query) => {
 };
 
 const Tag = {
+  name: 'tags', 
 	all: (callback) => {
 		let query = db('tags').select();
 		console.log("query.toString()", query.toString());

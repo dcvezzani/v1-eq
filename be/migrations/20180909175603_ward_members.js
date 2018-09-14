@@ -5,6 +5,9 @@ exports.up = function(knex, Promise) {
     table.increments('id').unsigned().primary()
 
     table.string('coupleName')
+    table.string('phone')
+    table.string('email')
+    table.string('address')
 
     table.string('headOfHouse_preferredName')
     table.string('headOfHouse_directoryName')

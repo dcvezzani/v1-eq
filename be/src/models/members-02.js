@@ -1,6 +1,7 @@
 import db from './../../db'
 
 const Member = {
+  name: 'members', 
 	all: (callback) => {
 		let query = db('members').select();
 		console.log("query.toString()", query.toString());

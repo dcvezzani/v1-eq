@@ -12,9 +12,20 @@
       <div class="control">
         <button @click="fetchMembers" class="button is-link">Fetch</button>
       </div>
+      <div class="control">
+        <button @click="updateContactInfo" class="button is-link">Update Contact Info</button>
+      </div>
+      <div class="control">
+        <button @click="fetchFamiliesNotVisited" class="button is-link">Families Not Visited</button>
+      </div>
+      <div class="control">
+        <button @click="gatherSelectedMemberIds" class="button is-link">Gather Member Ids</button>
+        <textarea onfocus="this.select()" v-if="selectedMemberIds.length > 0" id="" name="" cols="30" rows="10">{{selectedMemberIds.join(", ")}}</textarea>
+      </div>
     </div>
     
     <p class="fetched-message">{{ messages.fetched }}</p>
+    <p class="toast" v-html="messages.actions"></p>
     
     <div class="member-lists">
       <div class="columns">
@@ -72,6 +83,7 @@ export default {
         selectedMembers: {sendTo: 'unselectedMembers'}, 
       }, 
       memberName: 'coupleName',
+      selectedMemberIds: [],
     }
   },
   computed: {
@@ -82,6 +94,9 @@ export default {
   methods: {
     junk: function() {
 		},
+    gatherSelectedMemberIds: function() {
+      this.selectedMemberIds = this.selectedMembers.map(member => member.id);
+		},
     toastMessage: function(type, message, timeout=3000) {
       setTimeout(() => this.messages[type] = null, timeout);
       this.messages[type] = message;
@@ -90,6 +105,9 @@ export default {
       const source = (refresh) ? "lds.org" : "cache or lds.org";
       this.toastMessage('fetched', `Fetching data from ${source}.  Please wait...`)
       this.$socket.emit('sendShellCommand:fetchMemberListSummary', {cmd: btoa(this.fetchCommand), refresh});
+		},
+    fetchFamiliesNotVisited: function(refresh = true) {
+      this.$socket.emit('db:wardMembers:fetchFamiliesNotVisited');
 		},
     enterListener: function(event) { 
       if (event.code === 'Enter') {
@@ -132,11 +150,93 @@ export default {
     archiveMembers: function() {
 			this.$socket.emit('db:wardMembers:archive', {memberIds: this.removedIds});
     }, 
+    updateContactInfo: function(){
+      const offsetAmount = 3000;
+      let offset = 0;
+      // this.members.slice(0,1).forEach(member => {
+      this.members.forEach(member => {
+        offset += offsetAmount;
+        setTimeout(() => {
+          this.$socket.emit('sendShellCommand:updateContactInfo', {cmd: btoa(this.fetchCommand), memberId: member.id, refresh: true});
+        }, offset);
+      });
+    
+      // this.members.forEach(member => {
+      //   this.$socket.emit('sendShellCommand:updateContactInfo', {memberId: member.id});
+      // });
+    },
   },
   sockets:{
     "WardMembers:blah": function(data){
 		  console.log('WardMembers:blah', data);
 			this.$socket.emit('WardMembers:blah', {msg: 'bleh'});
+    },
+    "db:wardMembers:fetchFamiliesNotVisited:done": function(data){
+		  console.log('db:wardMembers:fetchFamiliesNotVisited:done', data);
+      
+      this.selectedMembers.length = 0;
+      //this.unselectedMembers = data.responsePayload;
+      this.unselectedMembers = data.responsePayload;
+			window.Event.$emit('MemberList:update');
+    },
+    "xsendShellCommand:getPhotoUrl:done": function(data){
+		  console.log('sendShellCommand:getPhotoUrl:done', data);
+
+      const photoDetails = JSON.parse(data.json);
+      {
+        setTimeout(() => {
+          this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: data.memberId, photoUrl: photoDetails.imageUrl, refresh: true, photoCacheDir: 'ward-photos-cache'});
+        }, 3000);
+      }
+      
+    },
+    "sendShellCommand:updateContactInfo:done": function(data){
+      const memberInfo = JSON.parse(data.json);
+		  console.log('sendShellCommand:updateContactInfo:done', memberInfo);
+
+      const { photoUrl: hohPhotoUrl, individualId: hohId } = memberInfo.headOfHousehold;
+      const { photoUrl: spousePhotoUrl, individualId: spouseId } = memberInfo.spouse || {};
+      const { photoUrl: familyPhotoUrl } = memberInfo.householdInfo;
+      const familyId = `${memberInfo.householdInfo.individualId}-family`;
+
+      // const { imageId: hohImageId, individualId: hohId } = memberInfo.headOfHousehold;
+      // const { imageId: spouseImageId, individualId: spouseId } = memberInfo.spouse;
+      // const { imageId: familyImageId } = memberInfo.householdInfo;
+      // const familyId = `${memberInfo.householdInfo.individualId}-family`;
+
+      {
+        setTimeout(() => {
+          // this.$socket.emit('sendShellCommand:getPhotoUrl', {cmd: btoa(this.fetchCommand), memberId: hohId, refresh: true, photoCacheDir: 'ward-photos-cache', imageId: hohImageId});
+          this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: hohId, photoUrl: hohPhotoUrl, refresh: true, photoCacheDir: 'ward-photos-cache'});
+          
+        }, 3000);
+      }
+
+      {
+        setTimeout(() => {
+          this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: spouseId, photoUrl: spousePhotoUrl, refresh: true, photoCacheDir: 'ward-photos-cache'});
+          
+        }, 4000);
+      }
+
+      {
+        setTimeout(() => {
+          this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: familyId, photoUrl: familyPhotoUrl, refresh: true, photoCacheDir: 'ward-photos-cache'});
+          
+        }, 5000);
+      }
+
+      // {
+      //   setTimeout(() => {
+      //     this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: hohId, refresh: true, photoCacheDir: 'ward-photos-cache', imageId: hohImageId});
+      //   }, 3000);
+      // }
+
+      // this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: spouseId, refresh: true, photoCacheDir: 'ward-photos-cache', photoUrl: spousePhotoUrl});
+      // this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: familyId, refresh: true, photoCacheDir: 'ward-photos-cache', familyPhotoUrl});
+
+      const { email, phone } = memberInfo.headOfHousehold;
+      this.toastMessage('actions', `Fetched member information for ${memberInfo.coupleName}: ${JSON.stringify({ email, phone })}`);
     },
     "sendShellCommand:fetchMemberListSummary:done": function(data){
 		  console.log('sendShellCommand:fetchMemberListSummary:done', data);
@@ -171,7 +271,13 @@ export default {
       }
 		  console.log('db:wardMembers:archive:done', data);
     },
-  },
+    // "sendShellCommand:fetchFamilyDetails:done": function(data){
+    //   console.log("sendShellCommand:fetchFamilyDetails:done", data);
+    //   const memberDetails = JSON.parse(data.json);
+    //   console.log("memberDetails", memberDetails);
+    //   this.memberInfo = memberDetails;
+    // },
+  },// 
   mounted () {
 		window.Event.$on('WardMembers:activate', (data) => {
 		  console.log('WardMembers:blah', data);
@@ -180,6 +286,12 @@ export default {
 
 		this.$socket.emit('sendShellCommand:fetchMemberListSummary', {cmd: btoa(this.fetchCommand)});
     
+  },
+
+  watch: {
+    selectedMembers: function (newValue, oldValue) {
+      if (newValue.length === 0) this.selectedMemberIds.length = 0;
+    },
   },
 }
 </script>

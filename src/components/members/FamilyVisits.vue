@@ -22,9 +22,10 @@
         <ul>
           <div class="member" v-for="( member, idx ) in taggedMembers" :key="member.id">
             <div :class="memberAssignment(idx)">
-              <div class="column">{{member.name}}</div>
+              <div class="column">{{memberName(member)}}</div>
               <div class="column">{{member.phone}}</div>
               <div class="column">{{member.email}}</div>
+              <div class="column">{{(member.address || '').replace(/ undefined/, '')}}</div>
             </div>
           </div>
         </ul>
@@ -38,9 +39,10 @@
 
       <tr v-for="( member, idx ) in taggedMembers" :key="member.id">
         <td></td>
-        <td>{{member.name}}</td>
+        <td>{{memberName(member)}}</td>
         <td>{{member.phone}}</td>
         <td>{{member.email}}</td>
+        <td>{{(member.address || '').replace(/ undefined/, '')}}</td>
       </tr>
 
       <tr>
@@ -76,20 +78,15 @@ export default {
   methods: {
     junk: function() {
 		},
+    memberName: function(member) {
+      return member.name || member.coupleName
+		},
     memberAssignment: function(idx) {
 			return {columns: true, altColor: (idx % 2 === 0)};
 		},
-  },
-  sockets:{
-    "FamilyVisits:blah": function(data){
-		  console.log('FamilyVisits:blah', data);
-			this.$socket.emit('FamilyVisits:blah', {msg: 'bleh'});
-    },
-    "db:tags:fetchMembers:done": function({ responsePayload }){
-		  console.log('db:tags:fetchMembers:done', responsePayload);
-      this.members = responsePayload;
-
+    renderView: function() {
       const tags = _.uniq(this.members.map(member => member.tag_name)).sort()
+      console.log(">>>tags", tags);
 
       let curDate = moment().day(moment().localeData().firstDayOfWeek());
       this.dates = _.range(0,30).map(idx => {
@@ -102,12 +99,37 @@ export default {
       });
     },
   },
+  sockets:{
+    "FamilyVisits:blah": function(data){
+		  console.log('FamilyVisits:blah', data);
+			this.$socket.emit('FamilyVisits:blah', {msg: 'bleh'});
+    },
+    "db:wardMembers:fetchFamilies:done": function({ responsePayload }){
+		  console.log('db:wardMembers:fetchFamilies:done', responsePayload);
+      // this.members = responsePayload.map(member => ({...member, name: member.coupleName, email: '', phone: ''}));
+      this.members = responsePayload;
+      this.renderView();
+    },
+
+    
+    "db:tags:fetchMembers:done": function({ responsePayload }){
+		  console.log('db:tags:fetchMembers:done', responsePayload);
+      this.members = responsePayload;
+      this.renderView();
+    },
+    "db:wardMembers:fetchFamiliesNotVisited:done": function({ responsePayload }){
+		  console.log('db:tags:fetchMembers:done', responsePayload);
+      this.members = responsePayload;
+      this.renderView();
+    },
+  },
   mounted () {
 		window.Event.$on('FamilyVisits:activate', (data) => {
 		  console.log('FamilyVisits:blah', data);
 			window.Event.$emit('FamilyVisits:activated', {msg: 'done'});
 		});
-		this.$socket.emit('db:tags:fetchMembers', {pattern: 'family-visits-'});
+		// this.$socket.emit('db:wardMembers:fetchFamilies');
+    this.$socket.emit('db:wardMembers:fetchFamiliesNotVisited');
   },
 }
 </script>

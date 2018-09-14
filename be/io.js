@@ -2,7 +2,7 @@ import socketIo from 'socket.io';
 import { V1_CACHE_DIR } from './constants';
 import { sendShellCommand } from './src/actions/shell';
 import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies } from './src/helpers/members';
-import { fetchMemberListSummary, importMembers as importWardMembers, archiveMembers as archiveWardMembers } from './src/helpers/ward_members';
+import { fetchMemberListSummary, importMembers as importWardMembers, archiveMembers as archiveWardMembers, fetchWardFamilies, updateContactInfo, getPhotoUrl, fetchWardFamiliesNotVisited } from './src/helpers/ward_members';
 import { allTags, createTag, applyTags, loadTagMemberIds, deleteTag, removeMembers, fetchMembers as fetchTagMembers, createTagGroups } from './src/helpers/tags';
 import fs from 'fs';
 import Member from './src/models/members-02';
@@ -76,8 +76,10 @@ const sendShellCommandWithType = (client, type, data, callback) => {
   const ioAction = (data.redirect) ? data.redirect : `sendShellCommand:${type}:done`;
   console.log(`sendShellCommandWithType`, type, data);
   const ldsCookie = getLdsCookie(data.cmd);
+  console.log(">>>ldsCookie", ldsCookie);
 
   switch(type) {
+    case 'updateContactInfo':
     case 'fetchFamilyDetails': {
       // if (ldsCookie === null) {
       //   const msg = `${label} was NOT activated; no lds cookie was provided`;
@@ -88,20 +90,22 @@ const sendShellCommandWithType = (client, type, data, callback) => {
       break;
     }
     case 'fetchMemberListSummary': {
-      // if (ldsCookie === null) {
-      //   const msg = `${label} was NOT activated; no lds cookie was provided`;
-      //   return client.emit(ioAction, {...data, err: msg});
-      // }
-
       data.cmd = Buffer.from(createFetchMemberListCmd(data.memberId, ldsCookie)).toString('base64');
       break;
     }
-    case 'fetchPhotoFile': 
+    case 'getPhotoUrl': {
+      let photoCacheDir = (data.photoCacheDir) ? data.photoCacheDir : 'photos-cache';
+      data.cmd = Buffer.from(createFetchPhotoUrlCmd(data.memberId, data.imageId, ldsCookie, photoCacheDir)).toString('base64');
+      break;
+    }
+    case 'fetchPhotoFile': {
+      let photoCacheDir = (data.photoCacheDir) ? data.photoCacheDir : 'photos-cache';
       if (data.photoUrl && data.photoUrl.length > 0)
-        data.cmd = Buffer.from(createFetchLdsFileCmd(data.memberId, data.photoUrl)).toString('base64');
+        data.cmd = Buffer.from(createFetchLdsFileCmd(data.memberId, data.photoUrl, ldsCookie, photoCacheDir)).toString('base64');
       else
         data.cmd = Buffer.from(createPlaceholderPhotoCmd(data.memberId)).toString('base64');
       break;
+    }
   }
 
   sendShellCommand({...data, cachePath: outputPath(type)}, (errRaw, data2) => {
@@ -115,12 +119,12 @@ const sendShellCommandWithType = (client, type, data, callback) => {
     const responsePayload = {err: (err || null), msg, cmd, stdout, stderr};
 
     if (callback) return callback({...data, ...responsePayload}, (err, data3) => {
-      if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
+      // if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
       console.log(">>>data", data, err, data3);
       return client.emit(data3.ioAction || ioAction, data3.responsePayload || responsePayload);
     });
 
-    if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
+    // if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
     client.emit(ioAction, responsePayload);
   });
 }
@@ -148,7 +152,9 @@ export const io = (server) => {
 		client.on('sendShellCommand:fetchFamilyDetails', function(data) { sendShellCommandWithType(client, 'fetchFamilyDetails', data, fetchFamilyDetails); });
 		client.on('sendShellCommand:fetchFamilies', function(data) { sendShellCommandWithType(client, 'fetchFamilies', data, fetchFamilies); });
 		client.on('sendShellCommand:fetchPhotoFile', function(data) { sendShellCommandWithType(client, 'fetchPhotoFile', data, fetchPhotoFile); });
+		client.on('sendShellCommand:getPhotoUrl', function(data) { sendShellCommandWithType(client, 'getPhotoUrl', data, getPhotoUrl); });
 		client.on('sendShellCommand:fetchMemberListSummary', function(data) { sendShellCommandWithType(client, 'fetchMemberListSummary', data, fetchMemberListSummary); });
+		client.on('sendShellCommand:updateContactInfo', function(data) { sendShellCommandWithType(client, 'updateContactInfo', data, updateContactInfo); });
 
 		client.on('db:members:import', function(data) { handleAction(client, 'db:members:import:done', data, importMembers); });
 		client.on('db:members:archive', function(data) { handleAction(client, 'db:members:archive:done', data, archiveMembers); });
@@ -157,6 +163,8 @@ export const io = (server) => {
 
 		client.on('db:wardMembers:import', function(data) { handleAction(client, 'db:wardMembers:import:done', data, importWardMembers); });
 		client.on('db:wardMembers:archive', function(data) { handleAction(client, 'db:wardMembers:archive:done', data, archiveWardMembers); });
+		client.on('db:wardMembers:fetchFamilies', function(data) { handleAction(client, 'db:wardMembers:fetchFamilies:done', data, fetchWardFamilies); });
+		client.on('db:wardMembers:fetchFamiliesNotVisited', function(data) { handleAction(client, 'db:wardMembers:fetchFamiliesNotVisited:done', data, fetchWardFamiliesNotVisited); });
     
 		client.on('db:tags:all', function(data) { handleAction(client, 'db:tags:all:done', data, allTags); });
 		client.on('db:tags:create', function(data) { handleAction(client, 'db:tags:create:done', data, createTag); });
@@ -170,12 +178,16 @@ export const io = (server) => {
 
 };
 
-const createFetchLdsFileCmd = (memberId, fileUrl) => {
-return `curl '${fileUrl}' -H 'authority: www.lds.org' -H 'cache-control: max-age=0' -H 'upgrade-insecure-requests: 1' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' -H 'referer: https://www.lds.org/directory/?lang=eng' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' > ${V1_CACHE_DIR}/photos-cache/${memberId}`
+const createFetchLdsFileCmd = (memberId, fileUrl, cookie, photosDir='photos-cache') => {
+return `curl '${fileUrl}' -H 'authority: www.lds.org' -H 'cache-control: max-age=0' -H $'cookie: ${cookie}' -H 'upgrade-insecure-requests: 1' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' -H 'referer: https://www.lds.org/directory/?lang=eng' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' > ${V1_CACHE_DIR}/${photosDir}/${memberId}`
 };
 
-const createPlaceholderPhotoCmd = (memberId) => {
-return `cp ${V1_CACHE_DIR}/../person-placeholder.jpg ${V1_CACHE_DIR}/photos-cache/${memberId}`
+const createFetchPhotoUrlCmd = (memberId, imageId, cookie, photosDir='photos-cache') => {
+return `curl 'https://www.lds.org/directory/services/web/v3.0/photo/${imageId}/?imageSize=MEDIUM' -H $'cookie: ${cookie}' -H 'authority: www.lds.org' -H 'cache-control: max-age=0' -H 'upgrade-insecure-requests: 1' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' -H 'referer: https://www.lds.org/directory/?lang=eng' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9'`
+};
+
+const createPlaceholderPhotoCmd = (memberId, photosDir='photos-cache') => {
+return `cp ${V1_CACHE_DIR}/../person-placeholder.jpg ${V1_CACHE_DIR}/${photosDir}/${memberId}`
 };
 
 const createFetchFamilyDetailsCmd = (memberId, cookie) => {
