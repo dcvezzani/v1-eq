@@ -94,7 +94,9 @@ export default {
 
       const tags = _.uniq(this.members.map(member => member.tag_name)).sort()
 
-      let curDate = moment().day(7);
+      // let curDate = moment().day(7);
+      // start 7 days prior to desired start date
+      let curDate = moment('9/9/2018');
       this.dates = _.range(0,30).map(idx => {
 
         const theDate = curDate.add(7, 'days').format('MMM DD, YYYY');

@@ -20,7 +20,7 @@
       </div>
       <div class="control">
         <button @click="gatherSelectedMemberIds" class="button is-link">Gather Member Ids</button>
-        <textarea onfocus="this.select()" v-if="selectedMemberIds.length > 0" id="" name="" cols="30" rows="10">{{selectedMemberIds.join(", ")}}</textarea>
+        <textarea onfocus="this.select()" v-if="selectedMemberIds.length > 0" id="" name="" cols="30" rows="10">{{selectedMembersSql}}</textarea>
       </div>
     </div>
     
@@ -84,6 +84,7 @@ export default {
       }, 
       memberName: 'coupleName',
       selectedMemberIds: [],
+      selectedMembersSql: null, 
     }
   },
   computed: {
@@ -96,6 +97,7 @@ export default {
 		},
     gatherSelectedMemberIds: function() {
       this.selectedMemberIds = this.selectedMembers.map(member => member.id);
+      this.selectedMembersSql = `select * from ward_members where id in (${this.selectedMemberIds.join(", ")})`;
 		},
     toastMessage: function(type, message, timeout=3000) {
       setTimeout(() => this.messages[type] = null, timeout);
@@ -153,17 +155,16 @@ export default {
     updateContactInfo: function(){
       const offsetAmount = 3000;
       let offset = 0;
+
+      const targetedMembers = (this.selectedMembers.length > 0) ? this.selectedMembers : this.members;
+      
       // this.members.slice(0,1).forEach(member => {
-      this.members.forEach(member => {
+      targetedMembers.forEach(member => {
         offset += offsetAmount;
         setTimeout(() => {
           this.$socket.emit('sendShellCommand:updateContactInfo', {cmd: btoa(this.fetchCommand), memberId: member.id, refresh: true});
         }, offset);
       });
-    
-      // this.members.forEach(member => {
-      //   this.$socket.emit('sendShellCommand:updateContactInfo', {memberId: member.id});
-      // });
     },
   },
   sockets:{

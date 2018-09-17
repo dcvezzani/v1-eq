@@ -88,7 +88,8 @@ export default {
       const tags = _.uniq(this.members.map(member => member.tag_name)).sort()
       console.log(">>>tags", tags);
 
-      let curDate = moment().day(moment().localeData().firstDayOfWeek());
+      // start 7 days prior to desired start date
+      let curDate = moment('9/9/2018').day(moment().localeData().firstDayOfWeek());
       this.dates = _.range(0,30).map(idx => {
 
         const theDate = curDate.add(7, 'days').format('MMM DD, YYYY');

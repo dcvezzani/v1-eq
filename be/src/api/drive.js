@@ -115,7 +115,7 @@ function copyFile(auth) {
 function uploadFile(auth, data, callback) {
   const drive = google.drive({version: 'v3', auth});
 
-  let documentHtml = fs.readFileSync(`${V1_CACHE_DIR}/20180805-test.html`);
+  let documentHtml = fs.readFileSync(`${V1_CACHE_DIR}/../data-default/20180805-test.html`);
   const familyName = data.name;
   const currentDate = moment().format('M/D');
   documentHtml = documentHtml.toString().replace(/__NAME__/, familyName).replace(/__DATE__/, currentDate);
@@ -137,7 +137,8 @@ function uploadFile(auth, data, callback) {
     resource: {
       ...data, 
       "parents": [
-        "18E7UueFZQwMcZprIvmJhfsX-tNNn0hH5" // My Drive > Vineyard-Private > visit-notes
+        // "18E7UueFZQwMcZprIvmJhfsX-tNNn0hH5" // My Drive > Vineyard-Private > visit-notes
+        "18E7UueFZQwMcZprIvmJhfsX-tNNn0hH5" // My Drive > Vineyard-Private > visit-notes (v1-eq)
       ], 
       mimeType: 'application/vnd.google-apps.document',
     },
@@ -147,5 +148,3 @@ function uploadFile(auth, data, callback) {
     callback(err, { status, statusText, data });
   });
 }
-
-

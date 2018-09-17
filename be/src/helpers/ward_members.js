@@ -1,6 +1,7 @@
 import moment from 'moment';
 import WardMember from './../models/ward_members';
 import db from './../../db';
+import { createFamilyNotes } from '../api/drive'
 
 const fetchWardMemberSyncReport = (members, callback) => {
   WardMember.allNotArchived((err, rows) => {
@@ -79,8 +80,8 @@ export const fetchMemberListSummary = (data, callback) => {
       delete member.copyrightText;
     });
 
-    fetchWardMemberSyncReport(members, (err, data) => {
-      callback(err, {responsePayload: { ...data, members, memberId: data.memberId }});
+    fetchWardMemberSyncReport(members, (err, data2) => {
+      callback(err, {responsePayload: { ...data2, members, memberId: data2.memberId }});
     });
 
   } catch (err) {
@@ -115,6 +116,20 @@ export const transformMembers = (members) => {
   });
 };
 
+const importMember = (member, callback) => {
+  createFamilyNotes({name: member.coupleName}, (err, res) => {
+    const notes_url = `https://docs.google.com/document/d/${res.data.id}`
+    const memberPlus = { ...member, notes_url }
+		const query = db('ward_members').insert(memberPlus);
+
+    query
+      .asCallback((err, rows) => {
+        if (err) return callback({msg: 'Unable to import record', raw: err, query, payload: memberPlus});
+        callback(null, { payload: rows });
+      });
+  });
+};
+
 export const importMembers = (data, callback) => {
   //todo: restructure rows so they are compatible with database table
 
@@ -140,20 +155,38 @@ export const importMembers = (data, callback) => {
           queryUpdate.asCallback((err, rows) => {
             if (err) return callback({msg: 'Unable to import records', raw: err, query: queryUpdate.toString()});
             const membersForBatchUpdate = members.filter(m => !memberIdsToUnarchive.includes(m.id));
+            let cntDown = membersForBatchUpdate.length;
 
-            db.batchInsert('ward_members', membersForBatchUpdate, 10)
-              .asCallback((err, rows) => {
-                if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert', payload: membersForBatchUpdate});
-                callback(null, { payload: rows });
+            membersForBatchUpdate.forEach(member => {
+              importMember(member, (err, res) => {
+                if (err) return callback(err);
+                cntDown -= 1;
+                if (cntDown === 0) return callback(null, {payload: null});
               });
-            
+            });
+
+            // db.batchInsert('ward_members', membersForBatchUpdate, 10)
+            //   .asCallback((err, rows) => {
+            //     if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert', payload: membersForBatchUpdate});
+            //     callback(null, { payload: rows });
+            //   });
           });
       } else {
-        db.batchInsert('ward_members', members, 10)
-          .asCallback((err, rows) => {
-            if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert', payload: members});
-            callback(null, { payload: rows });
+
+        let cntDown = members.length;
+        members.forEach(member => {
+          importMember(member, (err, res) => {
+            if (err) return callback(err);
+            cntDown -= 1;
+            if (cntDown === 0) return callback(null, {payload: null});
           });
+        });
+        
+        // db.batchInsert('ward_members', members, 10)
+        //   .asCallback((err, rows) => {
+        //     if (err) return callback({msg: 'Unable to import records', raw: err, query: 'batch insert', payload: members});
+        //     callback(null, { payload: rows });
+        //   });
       }
     });
 };

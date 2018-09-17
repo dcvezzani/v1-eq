@@ -103,7 +103,7 @@ const sendShellCommandWithType = (client, type, data, callback) => {
       if (data.photoUrl && data.photoUrl.length > 0)
         data.cmd = Buffer.from(createFetchLdsFileCmd(data.memberId, data.photoUrl, ldsCookie, photoCacheDir)).toString('base64');
       else
-        data.cmd = Buffer.from(createPlaceholderPhotoCmd(data.memberId)).toString('base64');
+        data.cmd = Buffer.from(createPlaceholderPhotoCmd(data.memberId, photoCacheDir)).toString('base64');
       break;
     }
   }
@@ -187,7 +187,7 @@ return `curl 'https://www.lds.org/directory/services/web/v3.0/photo/${imageId}/?
 };
 
 const createPlaceholderPhotoCmd = (memberId, photosDir='photos-cache') => {
-return `cp ${V1_CACHE_DIR}/../person-placeholder.jpg ${V1_CACHE_DIR}/${photosDir}/${memberId}`
+return `cp ${V1_CACHE_DIR}/../data-default/person-placeholder.jpg ${V1_CACHE_DIR}/${photosDir}/${memberId}`
 };
 
 const createFetchFamilyDetailsCmd = (memberId, cookie) => {

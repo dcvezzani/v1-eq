@@ -18,6 +18,6 @@ yarn-error.log*
 be/data/*.json
 
 be/*.sqlite3*
-be/token.json
-be/credentials.json
+token*.json
+credentials*.json
 data/
