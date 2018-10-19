@@ -1,6 +1,6 @@
 <template>
   <div class="chairs section">
-    <h2 class="title"> Vineyard 1st Ward Chair Assignments </h2>
+    <h2 class="title"> {{title}} </h2>
     
     <p>Show:</p>
     <div class="field is-grouped is-grouped-centered">
@@ -61,6 +61,8 @@ export default {
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
+      title: "Vineyard 1st Ward Chair Assignments",
+      xtitle: "Vineyard 1st Ward Move-In Volunteers",
       members: [],
       dates: [],
       viewMode: 'pretty',
@@ -97,6 +99,7 @@ export default {
       // let curDate = moment().day(7);
       // start 7 days prior to desired start date
       let curDate = moment('9/9/2018');
+      // curDate = moment('10/13/2018');
       this.dates = _.range(0,30).map(idx => {
 
         const theDate = curDate.add(7, 'days').format('MMM DD, YYYY');
@@ -113,6 +116,7 @@ export default {
 			window.Event.$emit('Chairs:activated', {msg: 'done'});
 		});
 		this.$socket.emit('db:tags:fetchMembers', {pattern: 'chairs-'});
+		// this.$socket.emit('db:tags:fetchMembers', {pattern: 'move-in-'});
   },
 }
 </script>

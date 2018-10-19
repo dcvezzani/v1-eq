@@ -48,6 +48,18 @@
         </div>
         <div class="column">
           <MemberList :members="selectedMembers" listName="selectedMembers" memberName="coupleName" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
+
+          <div v-if="memberInfos.length > 0" class="member-info">
+            <p class="title">Contact Info:</p>
+            <div v-for="family in memberInfos" :key="family.id" class="family-info" >
+              <div class="member-info-name">{{family.coupleName}}</div>
+              <div class="member-info-address">{{formattedAddress(family.householdInfo.address)}}</div>
+              <div class="member-info-phone"><span v-html="formattedPhone(family.householdInfo.phone)"></span> </div>
+              <div class="member-info-email"><span v-html="formattedEmail(family.headOfHousehold.email)"></span> </div>
+              <div>&nbsp;</div>
+            </div>
+          </div>
+      
         </div>
       </div>
       
@@ -85,6 +97,8 @@ export default {
       memberName: 'coupleName',
       selectedMemberIds: [],
       selectedMembersSql: null, 
+      memberInfo: null,
+      memberInfos: [],
     }
   },
   computed: {
@@ -157,7 +171,6 @@ export default {
       let offset = 0;
 
       const targetedMembers = (this.selectedMembers.length > 0) ? this.selectedMembers : this.members;
-      
       // this.members.slice(0,1).forEach(member => {
       targetedMembers.forEach(member => {
         offset += offsetAmount;
@@ -165,6 +178,21 @@ export default {
           this.$socket.emit('sendShellCommand:updateContactInfo', {cmd: btoa(this.fetchCommand), memberId: member.id, refresh: true});
         }, offset);
       });
+    },
+    formattedAddress: function(address) {
+      if (!address) return '';
+      const { addr1, addr2, addr3 } = address;
+      return [addr1, addr2, addr3].join(" ");
+    },
+    formattedPhone: function(phone) {
+      if (!phone) return '';
+      const cleanPhone = phone.toString().replace(/^\W+/, '').replace(/\W+$/, '');
+      return ` <a href="tel:${cleanPhone}">${cleanPhone}</a> `;
+    },
+    formattedEmail: function(email) {
+      if (!email) return '';
+      const cleanEmail = email.toString().replace(/^\W+/, '').replace(/\W+$/, '');
+      return ` <a href="mailto:${cleanEmail}">${cleanEmail}</a> `;
     },
   },
   sockets:{
@@ -207,7 +235,6 @@ export default {
 
       {
         setTimeout(() => {
-          // this.$socket.emit('sendShellCommand:getPhotoUrl', {cmd: btoa(this.fetchCommand), memberId: hohId, refresh: true, photoCacheDir: 'ward-photos-cache', imageId: hohImageId});
           this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: hohId, photoUrl: hohPhotoUrl, refresh: true, photoCacheDir: 'ward-photos-cache'});
           
         }, 3000);
@@ -227,17 +254,11 @@ export default {
         }, 5000);
       }
 
-      // {
-      //   setTimeout(() => {
-      //     this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: hohId, refresh: true, photoCacheDir: 'ward-photos-cache', imageId: hohImageId});
-      //   }, 3000);
-      // }
-
-      // this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: spouseId, refresh: true, photoCacheDir: 'ward-photos-cache', photoUrl: spousePhotoUrl});
-      // this.$socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(this.fetchCommand), memberId: familyId, refresh: true, photoCacheDir: 'ward-photos-cache', familyPhotoUrl});
-
       const { email, phone } = memberInfo.headOfHousehold;
       this.toastMessage('actions', `Fetched member information for ${memberInfo.coupleName}: ${JSON.stringify({ email, phone })}`);
+
+      this.memberInfo = memberInfo;
+      this.memberInfos.push(memberInfo);
     },
     "sendShellCommand:fetchMemberListSummary:done": function(data){
 		  console.log('sendShellCommand:fetchMemberListSummary:done', data);
@@ -291,7 +312,10 @@ export default {
 
   watch: {
     selectedMembers: function (newValue, oldValue) {
-      if (newValue.length === 0) this.selectedMemberIds.length = 0;
+      if (newValue.length === 0) {
+        this.selectedMemberIds.length = 0;
+        this.memberInfos.length = 0;
+      }
     },
   },
 }
@@ -299,5 +323,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.member-info {
+  margin: 1em 0;
+}
+.member-info div {
+  text-align: left; 
+}
 </style>
 

@@ -19,6 +19,18 @@ const Tag = {
 		});
 	},
 
+	fetch: (name, callback) => {
+		let query = db('tags').select()
+    .where({name});
+		console.log("query.toString()", query.toString());
+
+		query.orderBy('name', 'asc')
+		.asCallback((err, rows) => {
+			if (err) return callback({msg: 'Unable to fetch tag', raw: err, query: query.toString()});
+			callback(err, rows);
+		});
+	},
+
 	groupedByMembers: (pattern, callback) => {
 		let query = db('tags').innerJoin('member_tags', 'tags.id', 'member_tags.tag_id').innerJoin('members', 'members.id', 'member_tags.member_id').select(['members.id', 'members.name', 'members.phone', 'members.email', {tag_name: 'tags.name'}]).where('tags.name', 'like', `%${pattern}%`).orderBy('tags.name', 'asc', 'members.name', 'asc')
   console.log(">>>fetchMembers", query.toString());

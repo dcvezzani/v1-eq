@@ -20,6 +20,14 @@ const Member = {
 			callback(err, rows);
 		});
 	},
+	tagMembers: (members, callback) => {
+		const query = db('member_tags').insert(members);
+
+		query.asCallback((err, rows) => {
+			if (err) return callback({msg: 'Unable to tag members', raw: err, query: query.toString()});
+			callback(err, rows);
+		});
+	},
 	allNotArchived: (callback) => {
 		let query = db('members').select().whereNull('archived_at');
 		console.log("query.toString()", query.toString());
@@ -30,6 +38,7 @@ const Member = {
 			callback(err, rows);
 		});
 	},
+
 };
 
 export default Member;
