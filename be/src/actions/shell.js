@@ -9,7 +9,7 @@ const shellCommand = (cmd64, cachedOutputPath, callback) => {
   
   const cmd = new Buffer(cmd64, 'base64').toString("ascii");
 
-  console.log("cmd", cmd);
+  console.log(">>>cmd", cmd);
   // try {
     exec(cmd, {maxBuffer : 500 * 1024}, (err, stdout, stderr) => {
       if(err) {
@@ -43,7 +43,7 @@ export const sendShellCommand = (data, callback) => {
   const refresh = data.refresh;
 
   fs.access(cachedOutputPath, (err) => {
-    console.log(">>> refresh, err", refresh, err);
+    // console.log(">>> refresh, err", refresh, err);
     if (refresh || err) {
       return shellCommand(cmd64, cachedOutputPath, callback);
     }

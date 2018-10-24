@@ -73,7 +73,8 @@ const logPhoto = (responsePayload) => {
 const sendShellCommandWithType = (client, type, data, callback) => {
   // console.log(`${type}: ${JSON.stringify(data).slice(0,200)}...`);
   const label = type.replace(/\w/, c => c.toUpperCase());
-  const ioAction = (data.redirect) ? data.redirect : `sendShellCommand:${type}:done`;
+
+  const ioAction = (data.redirects) ? data.redirects : [`sendShellCommand:${type}:done`];
   console.log(`sendShellCommandWithType`, type, data);
   const ldsCookie = getLdsCookie(data.cmd);
   console.log(">>>ldsCookie", ldsCookie);
@@ -112,7 +113,7 @@ const sendShellCommandWithType = (client, type, data, callback) => {
     let msg = `${label} was activated`
     if (errRaw) {
       msg = `${label} was NOT activated`;
-      return client.emit(data2.ioAction || ioAction, {...data2, msg: errRaw.message});
+      return (data2.ioAction || ioAction).forEach(action => client.emit(action, {...data2, msg: errRaw.message}));
     }
 
     const { cmd, err, stdout, stderr } = data2;
@@ -121,11 +122,11 @@ const sendShellCommandWithType = (client, type, data, callback) => {
     if (callback) return callback({...data, ...responsePayload}, (err, data3) => {
       // if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
       console.log(">>>data", data, err, data3);
-      return client.emit(data3.ioAction || ioAction, data3.responsePayload || responsePayload);
+      return (data3.ioAction || ioAction).forEach(action => client.emit(action, data3.responsePayload || responsePayload));
     });
 
     // if (type === 'fetchFamilyDetails') logPhoto(responsePayload);
-    client.emit(ioAction, responsePayload);
+    ioAction.forEach(action => client.emit(ioAction, responsePayload));
   });
 }
 
@@ -179,7 +180,7 @@ export const io = (server) => {
 };
 
 const createFetchLdsFileCmd = (memberId, fileUrl, cookie, photosDir='photos-cache') => {
-return `curl '${fileUrl}' -H 'authority: www.lds.org' -H 'cache-control: max-age=0' -H $'cookie: ${cookie}' -H 'upgrade-insecure-requests: 1' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' -H 'referer: https://www.lds.org/directory/?lang=eng' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' > ${V1_CACHE_DIR}/${photosDir}/${memberId}`
+return `ls ${V1_CACHE_DIR}/${photosDir}/${memberId}; if [ ! "$?" == 0 ]; then curl '${fileUrl}' -H 'authority: www.lds.org' -H 'cache-control: max-age=0' -H $'cookie: ${cookie}' -H 'upgrade-insecure-requests: 1' -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36' -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' -H 'referer: https://www.lds.org/directory/?lang=eng' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' > ${V1_CACHE_DIR}/${photosDir}/${memberId}; fi`
 };
 
 const createFetchPhotoUrlCmd = (memberId, imageId, cookie, photosDir='photos-cache') => {

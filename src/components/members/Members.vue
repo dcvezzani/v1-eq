@@ -43,7 +43,8 @@
     
       <div class="xtabs">
         <a @click="selectedActiveTab = 'details'">Details</a> | 
-        <a @click="selectedActiveTab = 'lists'">Lists</a>
+        <a @click="selectedActiveTab = 'lists'">Lists</a> | 
+        <a @click="toggleListLoader">Loader</a>
       </div>
 
       <div v-show="selectedMembers.length > 0" class="selected-actions">
@@ -100,6 +101,15 @@
 
         <div class="column">
           <MemberList :members="selectedMembers" listName="selectedMembers" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
+
+          <div v-show="listLoaderActive" class="member-ids-loader">
+            <div class="field">
+              <textarea v-model="memberIdsToLoadList" class="textarea" placeholder="paste member ids here"></textarea>
+            </div>
+            <div class="field">
+              <a @click="loadMemberIds" class="button is-link"> Load IDs </a>
+            </div>
+          </div>
 
           <div v-show="selectedMembers.length > 0" class="selected-actions">
             <div v-show="selectedActiveTab == 'details'" class="xtab-details">
@@ -222,6 +232,8 @@ export default {
       currentListName: '',
       availableMembersCnt: 0,
       groupPrefix: '',
+      memberIdsToLoadList: '',
+      listLoaderActive: false,
     }
   },
   computed: {
@@ -231,8 +243,18 @@ export default {
     membersById: function() {
 			return this.members.reduce((hash, member) => {hash[member.id] = member; return hash}, {});
 		},
+    memberIdsToLoad: function() {
+      return this.memberIdsToLoadList.replace(/\"/g, '').split(/ *[,\n] */).map(memberId => parseInt(memberId));
+    },
   },
   methods: {
+    toggleListLoader: function(event) { 
+      this.listLoaderActive = !(this.listLoaderActive);
+    }, 
+    loadMemberIds: function(event) { 
+      // console.log(">>>memberIdsToLoad", this.memberIdsToLoad);
+      this.moveMembers({listName: 'unselectedMembers', memberIds: this.memberIdsToLoad});
+    }, 
     // for MemberList components
     enterListener: function(event) { 
       if (event.code === 'Enter') {
@@ -315,7 +337,7 @@ export default {
 
     createNotes: function() {
       this.selectedMembers.forEach(member => {
-        this.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), memberId: member.id, refresh: true, redirect: 'sendShellCommand:fetchFamilyDetails:createNotes:done'});
+        this.$socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), memberId: member.id, refresh: true, redirects: ['sendShellCommand:fetchFamilyDetails:createNotes:done', 'sendShellCommand:fetchFamilyDetails:done']});
       });
     },
     fetchMembers: function(refresh = true) {
@@ -519,6 +541,7 @@ export default {
         this.toastMessage('actions', `Notes created: <a target="_new" href="https://docs.google.com/document/d/${res.body.apiRes.data.id}/edit">${familyDetails.coupleName}</a>`);
       });
     },
+
     "sendShellCommand:fetchFamilyDetails:done": function(data){
       console.log("sendShellCommand:fetchFamilyDetails:done", data);
       const memberDetails = JSON.parse(data.json);
