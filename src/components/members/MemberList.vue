@@ -9,7 +9,7 @@
               <i class="fas fa-search"></i>
             </span>
             
-            <p><a @click="selectItems(true)">All</a> | <a @click="selectItems(false)">None</a> | <a @click="clearList">Clear</a></p>
+            <p><a @click="selectItems(true)">All</a> | <a @click="selectItems(false)">None</a> | <a @click="clearList">Clear</a> | ({{ members.length }})</p>
           </div>
           <div class="control">
             <a @click="pressEnter" class="button">

@@ -50,6 +50,15 @@ const WardMember = {
 			callback(err, rows);
 		});
 	},
+	allNotArchivedWithTag: (tagName, callback) => {
+    let query = db.raw("select ward_members.id, ward_members.coupleName, ward_members.phone, ward_members.email, ward_members.address from ward_members where ward_members.id in (select tag_associations.association_id from tags inner join tag_associations on tags.id = tag_associations.tag_id where tag_associations.association_type = 'ward_members' and tags.name = 'visited') order by ward_members.coupleName");
+		console.log("query.toString()", query.toString());
+
+    query.asCallback((err, rows) => {
+			if (err) return callback({msg: 'Unable to fetch records', raw: err, query: query.toString()});
+			callback(err, rows);
+		});
+	},
 	allNotArchivedWithTags: (pattern, callback) => {
 		// let query = db('ward_members').innerJoin('tag_associations', 'tags.id', 'tag_associations.tag_id').select().whereNull('ward_members.archived_at');
 
@@ -64,5 +73,6 @@ const WardMember = {
 		});
 	},
 };
+
 
 export default WardMember;

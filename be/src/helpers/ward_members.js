@@ -65,6 +65,11 @@ export const fetchWardFamiliesNotVisited = (data, callback) => {
   WardMember.allNotArchivedWithOutTag('visited', (err, rows) => callback(err, {responsePayload: rows}))
 };
 
+export const fetchWardFamiliesVisited = (data, callback) => {
+  // WardMember.allNotArchived((err, rows) => callback(err, {responsePayload: rows}))
+  WardMember.allNotArchivedWithTag('visited', (err, rows) => callback(err, {responsePayload: rows}))
+};
+
 export const fetchMemberListSummary = (data, callback) => {
   if (data.err) return callback(data.err);
   let members = []

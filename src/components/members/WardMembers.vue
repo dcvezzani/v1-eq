@@ -19,6 +19,9 @@
         <button @click="fetchFamiliesNotVisited" class="button is-link">Families Not Visited</button>
       </div>
       <div class="control">
+        <button @click="fetchFamiliesVisited" class="button is-link">Families Visited</button>
+      </div>
+      <div class="control">
         <button @click="gatherSelectedMemberIds" class="button is-link">Gather Member Ids</button>
         <textarea onfocus="this.select()" v-if="selectedMemberIds.length > 0" id="" name="" cols="30" rows="10">{{selectedMembersSql}}</textarea>
       </div>
@@ -28,6 +31,10 @@
     <p class="toast" v-html="messages.actions"></p>
     
     <div class="member-lists">
+        <div class="xtabs">
+          <a @click="toggleListLoader">Loader</a>
+        </div>
+
       <div class="columns">
         <div v-show="true || newRecords.length > 0" class="column">
           <p>{{ newRecords.length }} new records <span v-if="newRecords.length > 0">| <a @click="importMembers">Import</a></span></p>
@@ -48,6 +55,15 @@
         </div>
         <div class="column">
           <MemberList :members="selectedMembers" listName="selectedMembers" memberName="coupleName" @changeMode="changeMode" @moveMembers="moveMembers"></MemberList>
+
+          <div v-show="listLoaderActive" class="member-ids-loader">
+            <div class="field">
+              <textarea v-model="memberIdsToLoadList" class="textarea" placeholder="paste member ids here"></textarea>
+            </div>
+            <div class="field">
+              <a @click="loadMemberIds" class="button is-link"> Load IDs </a>
+            </div>
+          </div>
 
           <div v-if="memberInfos.length > 0" class="member-info">
             <p class="title">Contact Info:</p>
@@ -99,16 +115,29 @@ export default {
       selectedMembersSql: null, 
       memberInfo: null,
       memberInfos: [],
+
+      memberIdsToLoadList: '',
+      listLoaderActive: false,
     }
   },
   computed: {
     stuff: function() {
 			return 'stuff';
 		},
+    memberIdsToLoad: function() {
+      return this.memberIdsToLoadList.replace(/\"/g, '').split(/ *[,\n] */).map(memberId => parseInt(memberId));
+    },
   },
   methods: {
     junk: function() {
 		},
+    toggleListLoader: function(event) { 
+      this.listLoaderActive = !(this.listLoaderActive);
+    }, 
+    loadMemberIds: function(event) { 
+      // console.log(">>>memberIdsToLoad", this.memberIdsToLoad);
+      this.moveMembers({listName: 'unselectedMembers', memberIds: this.memberIdsToLoad});
+    }, 
     gatherSelectedMemberIds: function() {
       this.selectedMemberIds = this.selectedMembers.map(member => member.id);
       this.selectedMembersSql = `select * from ward_members where id in (${this.selectedMemberIds.join(", ")})`;
@@ -124,6 +153,9 @@ export default {
 		},
     fetchFamiliesNotVisited: function(refresh = true) {
       this.$socket.emit('db:wardMembers:fetchFamiliesNotVisited');
+		},
+    fetchFamiliesVisited: function(refresh = true) {
+      this.$socket.emit('db:wardMembers:fetchFamiliesVisited');
 		},
     enterListener: function(event) { 
       if (event.code === 'Enter') {
@@ -204,7 +236,13 @@ export default {
 		  console.log('db:wardMembers:fetchFamiliesNotVisited:done', data);
       
       this.selectedMembers.length = 0;
-      //this.unselectedMembers = data.responsePayload;
+      this.unselectedMembers = data.responsePayload;
+			window.Event.$emit('MemberList:update');
+    },
+    "db:wardMembers:fetchFamiliesVisited:done": function(data){
+		  console.log('db:wardMembers:fetchFamiliesVisited:done', data);
+
+      this.selectedMembers.length = 0;
       this.unselectedMembers = data.responsePayload;
 			window.Event.$emit('MemberList:update');
     },

@@ -3,10 +3,10 @@ import _ from 'lodash'
 
 const reportError = (callback, trx, msg, err, query) => {
   if (trx) trx.rollback();
-  return callback({msg, raw: err, query: query.toSQL()});
+  return callback({msg, raw: err, query: (query.toSQL) ? query.toSQL() : query.toString()});
 };
 
-const Tag = {
+const TagAssociation = {
   name: 'tag_associations', 
 	all: (association_type, callback) => {
 		let query = db('tags').select('tags.*').innerJoin('tag_associations', 'tags.id', 'tag_associations.tag_id')
@@ -93,13 +93,41 @@ const Tag = {
 
       let query3 = db('tag_associations').whereIn('tag_id', tagIds);
       console.log(">>>name, associationIds", name, JSON.stringify(associationIds));
-      if (associationIds) query3 = query3.whereIn('association_id', associationIds);
+      if (associationIds) query3 = query3.where({association_type}).whereIn('association_id', associationIds);
       query3 = query3.del();
       query3.asCallback((err, rows) => {
         if (err) return reportError(callback, null, 'Unable to remove member/tag associations', err, query3);
         const tags = tagIds.map(tagId => ({id: tagId, name}));
         callback(err, {rows, tags});
       });
+    });
+	},
+
+	addMembers: (association_type, name, associationIds, callback) => {
+    const query = db('tags').select().where({ name })
+		console.log("query.toString()", query.toString());
+    query.asCallback((err, rows) => {
+      if (err) return reportError(callback, null, `Unable to locate tag with name: ${name}`, err, query2);
+      const tagId = rows[0].id
+
+      const newRecords = associationIds.map(assoc => ({association_type, association_id: assoc, tag_id: tagId}))
+      console.log("new record ids for tag_associations", newRecords);
+
+      // newRecords.forEach(record => {
+      //   const query3 = db('tag_associations').insert(record);
+      //   console.log("query.toString()", query3.toString());
+      //   
+      //   query3.asCallback((err, rows) => {
+      //     if (err) return reportError(callback, null, 'Unable to add member/tag associations', err, query3);
+      //     callback(err, rows);
+      //   });
+      // });
+
+      db.batchInsert('tag_associations', newRecords, 10).asCallback((err, rows) => {
+        if (err) return reportError(callback, null, 'Unable to add member/tag associations', err, newRecords);
+        callback(err, rows);
+      });
+      
     });
 	},
 
@@ -139,5 +167,5 @@ const Tag = {
 	},
 };
 
-export default Tag;
+export default TagAssociation;
 
