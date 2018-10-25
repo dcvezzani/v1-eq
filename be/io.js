@@ -2,7 +2,7 @@ import socketIo from 'socket.io';
 import { V1_CACHE_DIR } from './constants';
 import { sendShellCommand } from './src/actions/shell';
 import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies } from './src/helpers/members';
-import { fetchMemberListSummary, importMembers as importWardMembers, archiveMembers as archiveWardMembers, fetchWardFamilies, updateContactInfo, getPhotoUrl, fetchWardFamiliesNotVisited, fetchWardFamiliesVisited } from './src/helpers/ward_members';
+import { fetchMemberListSummary, importMembers as importWardMembers, archiveMembers as archiveWardMembers, fetchWardFamilies, updateContactInfo, getPhotoUrl, fetchWardFamiliesNotVisited, fetchWardFamiliesVisited, fetchWardMembers } from './src/helpers/ward_members';
 import { allTags, createTag, applyTags, loadTagMemberIds, deleteTag, removeMembers, fetchMembers as fetchTagMembers, createTagGroups } from './src/helpers/tags';
 import fs from 'fs';
 import Member from './src/models/members-02';
@@ -29,7 +29,7 @@ const outputPath = (type) => {
 const handleAction = (client, ioResponse, data, handler) => {
   // console.log(">>>handleAction", data);
   handler(data, (err, handlerData) => {
-    // console.log("ioResponse", ioResponse, {err, ...handlerData})
+    console.log("ioResponse", ioResponse, {err, ...handlerData})
     if (err) return client.emit(ioResponse, {err, ...handlerData});
     client.emit(ioResponse, handlerData);
   });
@@ -167,6 +167,7 @@ export const io = (server) => {
 		client.on('db:wardMembers:fetchFamilies', function(data) { handleAction(client, 'db:wardMembers:fetchFamilies:done', data, fetchWardFamilies); });
 		client.on('db:wardMembers:fetchFamiliesNotVisited', function(data) { handleAction(client, 'db:wardMembers:fetchFamiliesNotVisited:done', data, fetchWardFamiliesNotVisited); });
 		client.on('db:wardMembers:fetchFamiliesVisited', function(data) { handleAction(client, 'db:wardMembers:fetchFamiliesVisited:done', data, fetchWardFamiliesVisited); });
+		client.on('db:wardMembers:fetch', function(data) { handleAction(client, 'db:wardMembers:fetch:done', data, fetchWardMembers); });
     
 		client.on('db:tags:all', function(data) { handleAction(client, 'db:tags:all:done', data, allTags); });
 		client.on('db:tags:create', function(data) { handleAction(client, 'db:tags:create:done', data, createTag); });

@@ -56,6 +56,10 @@ export const getPhotoUrl = (data, callback) => {
   callback(null, {responsePayload: { json: data.stdout, memberId: data.memberId }});
 };
 
+export const fetchWardMembers = (data, callback) => {
+  WardMember.allNotArchivedIds(data.memberIds, (err, rows) => callback(err, {responsePayload: rows}))
+};
+
 export const fetchWardFamilies = (data, callback) => {
   WardMember.allNotArchivedWithTags('family-visits-alpha-', (err, rows) => callback(err, {responsePayload: rows}))
 };

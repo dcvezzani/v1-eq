@@ -32,7 +32,8 @@
     
     <div class="member-lists">
         <div class="xtabs">
-          <a @click="toggleListLoader">Loader</a>
+          <a @click="toggleListLoader">Loader</a> | 
+          <a @click="randomFetchLoader">Random Fetch</a>
         </div>
 
       <div class="columns">
@@ -131,6 +132,11 @@ export default {
   methods: {
     junk: function() {
 		},
+    randomFetchLoader: function(event) { 
+      const randomMemberIds = _.shuffle(this.unselectedMembers.map(member => member.id)).slice(0,8);
+      // console.log(">>>randomMemberIds", randomMemberIds);
+      this.moveMembers({listName: 'unselectedMembers', memberIds: randomMemberIds});
+    }, 
     toggleListLoader: function(event) { 
       this.listLoaderActive = !(this.listLoaderActive);
     }, 

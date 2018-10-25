@@ -39,6 +39,16 @@ const WardMember = {
 			callback(err, rows);
 		});
 	},
+	allNotArchivedIds: (ids, callback) => {
+		let query = db('ward_members').select().whereNull('archived_at').whereIn('id', ids);
+		console.log("query.toString()", query.toString());
+
+		query.orderBy('coupleName', 'asc')
+		.asCallback((err, rows) => {
+			if (err) return callback({msg: 'Unable to fetch records', raw: err, query: query.toString()});
+			callback(err, rows);
+		});
+	},
 	allNotArchivedWithOutTag: (tagName, callback) => {
     let query = db.raw("select ward_members.id, ward_members.coupleName, ward_members.phone, ward_members.email, ward_members.address, tags.name as tag_name from tags inner join tag_associations on tags.id = tag_associations.tag_id inner join ward_members on ward_members.id = tag_associations.association_id where ward_members.archived_at is null and ward_members.id not in (select tag_associations.association_id from tags inner join tag_associations on tags.id = tag_associations.tag_id where tag_associations.association_type = 'ward_members' and tags.name = 'visited') order by ward_members.coupleName");
       

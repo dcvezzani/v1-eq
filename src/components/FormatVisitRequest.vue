@@ -9,6 +9,12 @@
 				<option v-for="template in templates">{{ template.name }}</option>
 			</select>
 		</div>
+		<textarea v-model="contactMemberIdsRaw" class="textarea" placeholder="Copy member ids here, comma delim"></textarea>
+		<div v-show="contactMemberIds.length > 0" class="select">
+			<select @change="loadMember">
+				<option v-for="member in contactMembers" :key="member.id" :value="member.id">{{ member.coupleName }}</option>
+			</select>
+		</div>
 		<a @click="showTextCommandTemplate" class="button">Toggle text cmd</a>
 
 		<textarea v-model="templateMessageContent" class="textarea" placeholder="Template content"></textarea>
@@ -52,6 +58,8 @@
 <script>
 import messageTemplate from './../message-template.txt';
 import messageTemplate02 from './../message-template-02.txt';
+import messageTemplateImmediateFollowUp from './../message-template-immediate-follow-up.txt';
+import messageTemplateSimpleHeadsUp from './../message-template-simple-heads-up.txt';
 import messageTemplateFamiliarFollowup from './../message-template-familiar-followup.txt';
 import messageTemplateBeforeSundayPPI from './../message-template-before-sunday-ppi.txt';
 import textCommandTemplate from './../text-command-template.txt';
@@ -67,6 +75,9 @@ export default {
       msg: 'Welcome to Your Vue.js App',
       personTitle: 'bro',
       personTitles: {bro: 'bro', sis: 'sis'}, 
+      contactMemberIdsRaw: '',
+      contactMembers: [], 
+      currentMember: {},
 			templateMessageContent: messageTemplate, 
 			messageContent: '', 
 			// lastname: 'Jones', 
@@ -89,6 +100,8 @@ export default {
 			templates: [
 				{name: 'basic', content: messageTemplate}, 
 				{name: 'alt-02', content: messageTemplate02}, 
+				{name: 'immediate-follow-up', content: messageTemplateImmediateFollowUp}, 
+				{name: 'simple-heads-up', content: messageTemplateSimpleHeadsUp}, 
 				{name: 'familiar-followup', content: messageTemplateFamiliarFollowup}, 
 				{name: 'ppi-before-sunday', content: messageTemplateBeforeSundayPPI}, 
 			],
@@ -99,6 +112,9 @@ export default {
   computed: {
     stuff: function() {
 			return 'stuff';
+		},
+    contactMemberIds: function() {
+			return this.contactMemberIdsRaw.split(/\n/g).map(mid => mid.replace(/\"/g, ''));
 		},
     formattedPersonTitle: function() {
       return (this.personTitle === 'bro') ? 'Bro.' : 'Sis.';
@@ -118,6 +134,11 @@ export default {
 		},
   },
   methods: {
+		loadMember: function(event) {
+      const selectedMemberId = event.target.options[event.target.selectedIndex].value;
+      this.currentMember = this.contactMembers.filter(member => member.id === parseInt(selectedMemberId))[0];
+      console.log(">>>this.currentMember", this.currentMember)
+		},
 		showTextCommandTemplate: function() {
 			this.textCommandTemplateVisible = !this.textCommandTemplateVisible;
 		},
@@ -201,12 +222,39 @@ export default {
     "sendShellCommand:email:done": function(err, data){
 		  console.log('sendShellCommand:email:done', err, data);
     },
+    "db:wardMembers:fetch:done": function(data){
+		  console.log('db:wardMembers:fetch:done', data);
+      this.contactMembers = data.responsePayload;
+      this.currentMember = this.contactMembers[0];
+    },
   },
   mounted () {
 		window.Event.$on('FormatVisitRequest:activate', (data) => {
 		  console.log('FormatVisitRequest:blah', data);
 			window.Event.$emit('FormatVisitRequest:activated', {msg: 'done'});
 		});
+  },
+  watch: {
+    contactMemberIds: function (newValue, oldValue) {
+			this.$socket.emit('db:wardMembers:fetch', {memberIds: this.contactMemberIds});
+    },
+
+    currentMember: function (newValue, oldValue) {
+			this.lastname = newValue.headOfHouse_surname;
+			this.phone = newValue.phone;
+			this.email = newValue.email;
+			this.personTitle = (newValue.headOfHouse_gender === 'MALE') ? 'bro' : 'sis';
+			this.lastname = newValue.headOfHouse_surname;
+    },
+
+		// <input v-model="lastname" class="input" type="text" placeholder="Last name: Smith">
+		// <input v-model="visitTime" class="input" type="text" placeholder="Visit time: 3pm">
+		// <input v-model="visitDate" class="input" type="text" placeholder="Visit date: 5/20">
+		// <input v-model="phone" class="input" type="text" placeholder="Phone: 2097569688">
+		// <input v-model="email" class="input" type="text" placeholder="Email: dave@email.com">
+		// <input v-model="subject" class="input" type="text" placeholder="Subject: Family visits">
+		// <input v-model="cc" class="input" type="text" placeholder="CC: pres@email.com">
+    
   },
 }
 </script>
