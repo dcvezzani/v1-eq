@@ -23,6 +23,14 @@ export const createFamilyNotes = (data, callback) => {
   authorize(auth, data, uploadFile, callback);
 };
 
+export const listFamilyNotes = (data, callback) => {
+  authorize(auth, data, listFiles, callback);
+};
+
+export const findFamilyNotes = (data, callback) => {
+  authorize(auth, data, findFiles, callback);
+};
+
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
  * given callback function.
@@ -96,6 +104,30 @@ function listFiles(auth) {
   });
 }
 
+function findFiles(auth, data, callback) {
+  const drive = google.drive({version: 'v3', auth});
+  drive.files.list({
+    pageSize: 10,
+    fields: 'nextPageToken, files(id, name)',
+    q: `name="${data.name}" and trashed=false`
+  }, (err, res) => {
+    if (err) {
+      console.log('The API returned an error: ' + err);
+      return callback(err);
+    }
+    const files = res.data.files;
+    if (files.length) {
+      console.log('Files:');
+      files.map((file) => {
+        console.log(`${file.name} (${file.id})`);
+      });
+    } else {
+      console.log('No files found.');
+    }
+    callback(null, files);
+  });
+}
+
 function copyFile(auth) {
   const drive = google.drive({version: 'v3', auth});
   drive.files.copy({
@@ -148,3 +180,31 @@ function uploadFile(auth, data, callback) {
     callback(err, { status, statusText, data });
   });
 }
+
+/*
+ *
+setTimeout(() => {
+findFamilyNotes({name: 'Albrecht, Todd'}, (err, files) => {
+  console.log(">>>findFamilyNotes", err, files);
+});
+}, 2000);
+
+const async = require('async');
+
+async.series([
+  (cb) => {console.log('one'); setTimeout(() => cb(), 2000)}, 
+  (cb) => {console.log('two'); setTimeout(() => cb(Error("asdf")), 2000)}, 
+  (cb) => {console.log('three'); setTimeout(() => cb(), 2000)}, 
+], (err, res) => {
+  console.log(">>>done", err, res);
+})
+
+async.series({
+  one: (cb) => {console.log('one'); setTimeout(() => cb(null, 1), 2000)}, 
+  two: (cb) => {console.log('two'); setTimeout(() => cb(), 2000)}, 
+  three: (cb) => {console.log('three'); setTimeout(() => cb(), 2000)}, 
+}, (err, res) => {
+  console.log(">>>done", err, res);
+})
+ */
+

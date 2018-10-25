@@ -1,7 +1,8 @@
+const async = require('async');
 import moment from 'moment';
 import WardMember from './../models/ward_members';
 import db from './../../db';
-import { createFamilyNotes } from '../api/drive'
+import { createFamilyNotes, findFamilyNotes } from '../api/drive'
 
 const fetchWardMemberSyncReport = (members, callback) => {
   WardMember.allNotArchived((err, rows) => {
@@ -126,18 +127,55 @@ export const transformMembers = (members) => {
 };
 
 const importMember = (member, callback) => {
-  // todo: check to see if google doc already exists; if not, create; else don't create duplicate
-  createFamilyNotes({name: member.coupleName}, (err, res) => {
-    const notes_url = `https://docs.google.com/document/d/${res.data.id}`
-    const memberPlus = { ...member, notes_url }
-		const query = db('ward_members').insert(memberPlus);
+  console.log("importMember:begin", member);
+  const session = {};
 
-    query
-      .asCallback((err, rows) => {
-        if (err) return callback({msg: 'Unable to import record', raw: err, query, payload: memberPlus});
-        callback(null, { payload: rows });
+  async.series({
+    findFamilyNotes: (cb) => {
+      console.log('findFamilyNotes:begin'); 
+
+      findFamilyNotes({name: member.coupleName}, (err, files) => {
+        console.log("findFamilyNotes:end", err, files);
+        if (files.length > 0) {
+          console.log(`Found family notes for ${member.coupleName}`);
+          session.notes = 'exist'
+        }
+        cb(err, files)
       });
-  });
+    }, 
+    createFamilyNotes: (cb) => {
+      console.log('createFamilyNotes:begin'); 
+      if (session.notes === 'exist') {
+        console.log('createFamilyNotes:end', `Member notes already exist; not creating family note for ${member.coupleName}`); 
+        session.memberDetails = member;
+        return cb() 
+      }
+
+        session.memberDetails = member;
+      createFamilyNotes({name: member.coupleName}, (err, res) => {
+        console.log('createFamilyNotes:end', err, res); 
+        if (err) cb(Error(`Unable to create family notes for ${member.coupleName}`), err)
+
+        const notes_url = `https://docs.google.com/document/d/${res.data.id}`
+        session.memberDetails = { ...member, notes_url }
+        cb(null, files)
+      });
+    }, 
+    recordInDb: (cb) => {
+      console.log('recordInDb:begin'); 
+      const query = db('ward_members').insert(session.memberDetails);
+
+      query
+        .asCallback((err, rows) => {
+          console.log('recordInDb:end'); 
+          if (err) return cb({msg: 'Unable to import record', raw: err, query, payload: session.memberDetails});
+          cb(null, { payload: rows });
+        });
+    }, 
+  }, (err, res) => {
+    console.log(">>>importMember:end", err, res);
+    callback(err, res);
+  })
 };
 
 export const importMembers = (data, callback) => {
