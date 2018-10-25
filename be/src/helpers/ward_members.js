@@ -126,6 +126,7 @@ export const transformMembers = (members) => {
 };
 
 const importMember = (member, callback) => {
+  // todo: check to see if google doc already exists; if not, create; else don't create duplicate
   createFamilyNotes({name: member.coupleName}, (err, res) => {
     const notes_url = `https://docs.google.com/document/d/${res.data.id}`
     const memberPlus = { ...member, notes_url }
