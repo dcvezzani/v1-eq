@@ -61,6 +61,7 @@ import messageTemplate02 from './../message-template-02.txt';
 import messageTemplateImmediateFollowUp from './../message-template-immediate-follow-up.txt';
 import messageTemplateSimpleHeadsUp from './../message-template-simple-heads-up.txt';
 import messageTemplateFamiliarFollowup from './../message-template-familiar-followup.txt';
+import messageTemplateFamiliarFollowup02 from './../message-template-familiar-followup-02.txt';
 import messageTemplateBeforeSundayPPI from './../message-template-before-sunday-ppi.txt';
 import textCommandTemplate from './../text-command-template.txt';
 import emailCommandTemplate from './../email-command-template.txt';
@@ -103,6 +104,7 @@ export default {
 				{name: 'immediate-follow-up', content: messageTemplateImmediateFollowUp}, 
 				{name: 'simple-heads-up', content: messageTemplateSimpleHeadsUp}, 
 				{name: 'familiar-followup', content: messageTemplateFamiliarFollowup}, 
+				{name: 'familiar-followup-02', content: messageTemplateFamiliarFollowup02}, 
 				{name: 'ppi-before-sunday', content: messageTemplateBeforeSundayPPI}, 
 			],
 			textCommandTemplateVisible: false,

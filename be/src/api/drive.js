@@ -15,12 +15,16 @@ fs.readFile('credentials.json', (err, content) => {
   // Authorize a client with credentials, then call the Google Drive API.
   // authorize(JSON.parse(content), listFiles);
   // authorize(JSON.parse(content), copyFile);
-  // authorize(JSON.parse(content), uploadFile);
+  // authorize(JSON.parse(content), uploadFamilyNotes);
   auth = JSON.parse(content);
 });
 
 export const createFamilyNotes = (data, callback) => {
-  authorize(auth, data, uploadFile, callback);
+  authorize(auth, data, uploadFamilyNotes, callback);
+};
+
+export const uploadDbBackup = (data, callback) => {
+  authorize(auth, data, uploadDoc, callback);
 };
 
 export const listFamilyNotes = (data, callback) => {
@@ -28,8 +32,13 @@ export const listFamilyNotes = (data, callback) => {
 };
 
 export const findFamilyNotes = (data, callback) => {
-  authorize(auth, data, findFiles, callback);
+  authorize(auth, {query: `name="${data.name}" and trashed=false`}, findFiles, callback);
 };
+
+export const fetchDbBackup = (data, callback) => {
+  authorize(auth, {id: "1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI"}, fetchFile, callback);
+};
+
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -109,7 +118,7 @@ function findFiles(auth, data, callback) {
   drive.files.list({
     pageSize: 10,
     fields: 'nextPageToken, files(id, name)',
-    q: `name="${data.name}" and trashed=false`
+    q: data.query,
   }, (err, res) => {
     if (err) {
       console.log('The API returned an error: ' + err);
@@ -128,23 +137,49 @@ function findFiles(auth, data, callback) {
   });
 }
 
-function copyFile(auth) {
+function fetchFile(auth, data, callback) {
   const drive = google.drive({version: 'v3', auth});
-  drive.files.copy({
-    fileId: '16hu1ltUZSO6jrnRlp69zxHydQnMUZaPPZ1hQsDkWL3E',
-    resource: {
-      "name": "Vezzani, Dave & Juventa",
-      "parents": [
-        "1i-d35wdCaKKlWB9KmWx72vfXU5vAXZcH"
-      ]
-    },
+  const destFilename = './dev.sqlite3.sql.enc'
+  const dest = fs.createWriteStream(destFilename);
+
+  drive.files.get({
+    fileId: data.id,
+    alt: 'media', 
+  }, {
+    responseType: 'stream' // this makes res.data "pipe"-able
   }, (err, res) => {
-    if (err) return console.log('The API returned an error: ' + err);
-    console.log(res);
+    if (err) {
+      console.log('The API returned an error: ' + err);
+      return callback(err);
+    }
+
+    res.data.on('error', err => {
+      console.log('Error while piping to file: ' + err);
+      callback(err);
+    }).on('end', ()=>{
+        callback();
+    })
+    .pipe(dest);
   });
 }
 
-function uploadFile(auth, data, callback) {
+// function copyFile(auth) {
+//   const drive = google.drive({version: 'v3', auth});
+//   drive.files.copy({
+//     fileId: '16hu1ltUZSO6jrnRlp69zxHydQnMUZaPPZ1hQsDkWL3E',
+//     resource: {
+//       "name": "Vezzani, Dave & Juventa",
+//       "parents": [
+//         "1i-d35wdCaKKlWB9KmWx72vfXU5vAXZcH"
+//       ]
+//     },
+//   }, (err, res) => {
+//     if (err) return console.log('The API returned an error: ' + err);
+//     console.log(res);
+//   });
+// }
+
+function uploadFamilyNotes(auth, data, callback) {
   const drive = google.drive({version: 'v3', auth});
 
   let documentHtml = fs.readFileSync(`${V1_CACHE_DIR}/../data-default/20180805-test.html`);
@@ -181,30 +216,42 @@ function uploadFile(auth, data, callback) {
   });
 }
 
-/*
- *
-setTimeout(() => {
-findFamilyNotes({name: 'Albrecht, Todd'}, (err, files) => {
-  console.log(">>>findFamilyNotes", err, files);
-});
-}, 2000);
+function uploadDoc(auth, data, callback) {
+  const drive = google.drive({version: 'v3', auth});
 
-const async = require('async');
+  var media = {
+    mimeType: 'text/html',
+    body: fs.createReadStream(data.filename),
+    // '/Users/davidvezzani/Dropbox/journal/current/20180805-test.html'
+  };
+    
+  drive.files.create({
+    fields: 'id', 
+    media, 
+    resource: {
+      name: 'dev.sqlite3.sql.enc', 
+    },
+    
+  }, (err, res) => {
+    // if (err) return console.log('The API returned an error: ' + err);
+    const { status, statusText, data } = res;
+    callback(err, { status, statusText, data });
+  });
+}
 
-async.series([
-  (cb) => {console.log('one'); setTimeout(() => cb(), 2000)}, 
-  (cb) => {console.log('two'); setTimeout(() => cb(Error("asdf")), 2000)}, 
-  (cb) => {console.log('three'); setTimeout(() => cb(), 2000)}, 
-], (err, res) => {
-  console.log(">>>done", err, res);
-})
+  
+// setTimeout(() => {
+// // 1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI
+// fetchDbBackup({name: 'dev.sqlite3.sql.enc'}, (err, res) => {
+//   console.log(">>>fetchDbBackup", {err, res})
+// })
+// }, 2000);
 
-async.series({
-  one: (cb) => {console.log('one'); setTimeout(() => cb(null, 1), 2000)}, 
-  two: (cb) => {console.log('two'); setTimeout(() => cb(), 2000)}, 
-  three: (cb) => {console.log('three'); setTimeout(() => cb(), 2000)}, 
-}, (err, res) => {
-  console.log(">>>done", err, res);
-})
- */
+// uploadDbBackup({filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
+//   console.log(">>>uploadDbBackup", {err, res})
+// })
 
+// createFamilyNotes({name: 'xxx'}, (err, res) => {
+//   console.log(">>>createFamilyNotes", {err, res})
+// })
+  
