@@ -39,6 +39,10 @@ export const fetchDbBackup = (data, callback) => {
   authorize(auth, {id: "1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI"}, fetchFile, callback);
 };
 
+export const updateDbBackup = (data, callback) => {
+  authorize(auth, {...data, id: "1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI"}, updateDoc, callback);
+};
+
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -239,7 +243,43 @@ function uploadDoc(auth, data, callback) {
   });
 }
 
+function updateDoc(auth, data, callback) {
+  const drive = google.drive({version: 'v3', auth});
+
+  // var media = {
+  //   uploadType: 'media', 
+  //   body: fs.createReadStream(data.filename),
+  //   // '/Users/davidvezzani/Dropbox/journal/current/20180805-test.html'
+  // };
+    
+  console.log(">>>data.filename", data.filename);
+
+  var media = {
+    mimeType: 'text/html',
+  }
   
+  drive.files.update({
+    fileId: data.id,
+    media, 
+    uploadType: 'media', 
+    body: fs.createReadStream(data.filename),
+  }, (err, res) => {
+    // if (err) return console.log('The API returned an error: ' + err);
+    // const { status, statusText, data } = res;
+    // callback(err, { status, statusText, data });
+    callback(err, res);
+  });
+}
+
+  
+// todo: getting Error 413 (Request Entity Too Large)!!  Need to find an alternate method of updating docs in google docs (non-Google Doc)
+// setTimeout(() => {
+// // 1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI
+// updateDbBackup({filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
+//   console.log(">>>updateDbBackup", {err, res})
+// })
+// }, 2000);
+
 // setTimeout(() => {
 // // 1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI
 // fetchDbBackup({name: 'dev.sqlite3.sql.enc'}, (err, res) => {
