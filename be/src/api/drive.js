@@ -3,6 +3,7 @@ const readline = require('readline');
 const moment = require('moment');
 const {google} = require('googleapis');
 import { V1_CACHE_DIR } from '../../constants';
+import fetch from 'node-fetch'
 
 // If modifying these scopes, delete credentials.json.
 const SCOPES = ['https://www.googleapis.com/auth/drive'];
@@ -36,11 +37,11 @@ export const findFamilyNotes = (data, callback) => {
 };
 
 export const fetchDbBackup = (data, callback) => {
-  authorize(auth, {id: "1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI"}, fetchFile, callback);
+  authorize(auth, {id: "1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI", ...data}, fetchFile, callback);
 };
 
 export const updateDbBackup = (data, callback) => {
-  authorize(auth, {...data, id: "1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI"}, updateDoc, callback);
+  authorize(auth, {id: "1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI", ...data}, updateDoc, callback);
 };
 
 
@@ -246,36 +247,77 @@ function uploadDoc(auth, data, callback) {
 function updateDoc(auth, data, callback) {
   const drive = google.drive({version: 'v3', auth});
 
-  // var media = {
-  //   uploadType: 'media', 
-  //   body: fs.createReadStream(data.filename),
-  //   // '/Users/davidvezzani/Dropbox/journal/current/20180805-test.html'
-  // };
-    
-  console.log(">>>data.filename", data.filename);
-
-  var media = {
+  const fileMetadata = {
+    'name': 'dev.sqlite3.sql.enc'
+  };
+  const media = {
     mimeType: 'text/html',
-  }
-  
+    body: fs.createReadStream(data.filename)
+  };
   drive.files.update({
     fileId: data.id,
-    media, 
-    uploadType: 'media', 
-    body: fs.createReadStream(data.filename),
-  }, (err, res) => {
-    // if (err) return console.log('The API returned an error: ' + err);
-    // const { status, statusText, data } = res;
-    // callback(err, { status, statusText, data });
+    resource: fileMetadata,
+    media: media,
+  }, function (err, res) {
+    if (err) {
+      // Handle error
+      console.error(err);
+    } else {
+      console.log('res: ', res);
+    }
     callback(err, res);
   });
 }
+
+/*
+function updateDoc2(auth, data, callback) {
+  console.log(">>>data", data)
+  
+  fs.readFile(TOKEN_PATH, (err, token) => {
+    if (err) return getAccessToken(oAuth2Client, callback);
+    const access_token = JSON.parse(token)
+    // oAuth2Client.setCredentials(JSON.parse(token));
+    // callback(oAuth2Client, data, callback2);
+
+    const url = 'https://www.googleapis.com/upload/drive/v3/files/' + data.id + '?uploadType=media';
+    const mimeType = 'text/html';
+    if(fetch){
+
+      fs.readFile(data.filename, (err, fileContents) => {
+        console.log(">>>fileContents", fileContents);
+        var setOptions = {
+            method: 'PATCH',
+            headers: { 'Content-Type': mimeType, 'Authorization': 'Bearer ' + access_token },
+            body:  fileContents, //fs.createReadStream(data.filename),
+        };
+        fetch(url,setOptions)
+            .then(response => {
+              console.log(">>>response", response);
+              if(response.ok){ 
+                console.log("save to drive");
+                callback();
+              } else { 
+                console.log("Response wast not ok"); 
+                callback(Error("Response wast not ok"));
+              }
+            })
+            .catch(error => {
+              console.log("There is an error " + error.message);
+              callback(Error("There is an error " + error.message));
+            });
+      });
+
+    }
+    
+  });
+}
+ */
 
   
 // todo: getting Error 413 (Request Entity Too Large)!!  Need to find an alternate method of updating docs in google docs (non-Google Doc)
 // setTimeout(() => {
 // // 1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI
-// updateDbBackup({filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
+// updateDbBackup({id: '1wK1IPldmrtdI3w-tjnJSLRKPP4QIzyeJ', filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
 //   console.log(">>>updateDbBackup", {err, res})
 // })
 // }, 2000);
@@ -287,9 +329,12 @@ function updateDoc(auth, data, callback) {
 // })
 // }, 2000);
 
+// setTimeout(() => {
+// // uploadDbBackup({filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
 // uploadDbBackup({filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
 //   console.log(">>>uploadDbBackup", {err, res})
 // })
+// }, 2000);
 
 // createFamilyNotes({name: 'xxx'}, (err, res) => {
 //   console.log(">>>createFamilyNotes", {err, res})
