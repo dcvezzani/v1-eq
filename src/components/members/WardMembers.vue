@@ -22,6 +22,9 @@
         <button @click="fetchFamiliesVisited" class="button is-link">Families Visited</button>
       </div>
       <div class="control">
+        <button @click="fetchFamiliesInfo" class="button is-link">Family Info</button>
+      </div>
+      <div class="control">
         <button @click="gatherSelectedMemberIds" class="button is-link">Gather Member Ids</button>
         <textarea onfocus="this.select()" v-if="selectedMemberIds.length > 0" id="" name="" cols="30" rows="10">{{selectedMembersSql}}</textarea>
       </div>
@@ -80,7 +83,22 @@
               <img v-show="family.householdInfo.photoUrl.length > 0" :src="family.householdInfo.photoUrl" title="householdInfo" class="memberPhoto">
               <img v-show="family.householdInfo.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" title="householdInfo" class="memberPhoto">
             </div>
-
+          </div>
+      
+          <div v-if="memberInfos2.length > 0" class="member-info">
+            <p class="title">Contact Info:</p>
+            <div v-for="family in memberInfos2" :key="family.id" class="family-info" >
+              <div class="member-info-name">{{family.coupleName}}</div>
+              <div class="member-info-address">{{family.address}}</div>
+              <div class="member-info-phone"><span v-html="formattedPhone(family.phone)"></span> </div>
+              <div class="member-info-email"><span v-html="formattedEmail(family.email)"></span> </div>
+              <div class="member-info-notes"><a :href="family.notes_url" target="_family_notes">{{family.notes_url}}</a> </div>
+              <div>&nbsp;</div>
+              <img :src="memberPhotoUrl(family.headOfHouse_individualId)" :title="family.headOfHouse_preferredName" class="memberPhoto">
+              <!-- img :src="memberPhotoUrl(family.headOfHouse_individualId, 'family')" :title="family.coupleName" class="memberPhoto" -->
+              <!-- div>Number of children: {{family.numberOfChildren}}</div -->
+              <hr>
+            </div>
           </div>
       
         </div>
@@ -122,6 +140,7 @@ export default {
       selectedMembersSql: null, 
       memberInfo: null,
       memberInfos: [],
+      memberInfos2: [],
 
       memberIdsToLoadList: '',
       listLoaderActive: false,
@@ -137,6 +156,10 @@ export default {
   },
   methods: {
     junk: function() {
+		},
+    memberPhotoUrl: function(memberId, suffix) {
+      if (suffix) return `http://localhost:8095/photos/${memberId}-${suffix}`
+      else return `http://localhost:8095/photos/${memberId}`
 		},
     randomFetchLoader: function(event) { 
       const randomMemberIds = _.shuffle(this.unselectedMembers.map(member => member.id)).slice(0,8);
@@ -168,6 +191,10 @@ export default {
 		},
     fetchFamiliesVisited: function(refresh = true) {
       this.$socket.emit('db:wardMembers:fetchFamiliesVisited');
+		},
+    fetchFamiliesInfo: function(refresh = true) {
+      const memberIds = this.selectedMembers.map(member => member.id);
+      this.$socket.emit('db:wardMembers:fetch', {memberIds});
 		},
     enterListener: function(event) { 
       if (event.code === 'Enter') {
@@ -257,6 +284,10 @@ export default {
       this.selectedMembers.length = 0;
       this.unselectedMembers = data.responsePayload;
 			window.Event.$emit('MemberList:update');
+    },
+    "db:wardMembers:fetch:done": function(data){
+		  console.log('db:wardMembers:fetch:done', data);
+      this.memberInfos2 = data.responsePayload;
     },
     "xsendShellCommand:getPhotoUrl:done": function(data){
 		  console.log('sendShellCommand:getPhotoUrl:done', data);
@@ -386,6 +417,7 @@ export default {
       if (newValue.length === 0) {
         this.selectedMemberIds.length = 0;
         this.memberInfos.length = 0;
+        this.memberInfos2.length = 0;
       }
     },
   },

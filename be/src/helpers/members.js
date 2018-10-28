@@ -25,6 +25,11 @@ export const fetchFamilies = (data, callback) => {
   callback(null, {responsePayload: { ...data, removedIds: [], newRecords: [] }});
 };
 
+export const fetchQuorumMembers = (data, callback) => {
+  if (data.err) return callback(data.err);
+  callback(null, {responsePayload: { ...data }});
+};
+
 export const fetchMemberSyncReport = (data, callback) => {
   if (data.err) return callback(data.err);
   
@@ -50,6 +55,10 @@ const objectAttrs = (obj, attrs) => {
 const familyMemberAttrs = (member) => {
   const {individualId, preferredName, directoryName, gender, surname} = member;
   return {individualId, preferredName, directoryName, gender, surname};
+};
+
+export const fetchMembers = (data, callback) => {
+  Member.allNotArchivedIds(data.memberIds, (err, rows) => callback(err, {responsePayload: rows}))
 };
 
 const processFamilies = (data, callback) => {

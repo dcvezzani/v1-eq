@@ -1,7 +1,7 @@
 import socketIo from 'socket.io';
 import { V1_CACHE_DIR } from './constants';
 import { sendShellCommand } from './src/actions/shell';
-import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies } from './src/helpers/members';
+import { fetchMemberSyncReport, importMembers, archiveMembers, fetchFamilyDetails, fetchFamilies, importFamilies, fetchPhotoFile, ybFetchFamilies, fetchQuorumMembers } from './src/helpers/members';
 import { fetchMemberListSummary, importMembers as importWardMembers, archiveMembers as archiveWardMembers, fetchWardFamilies, updateContactInfo, getPhotoUrl, fetchWardFamiliesNotVisited, fetchWardFamiliesVisited, fetchWardMembers } from './src/helpers/ward_members';
 import { allTags, createTag, applyTags, loadTagMemberIds, deleteTag, removeMembers, fetchMembers as fetchTagMembers, createTagGroups } from './src/helpers/tags';
 import fs from 'fs';
@@ -161,6 +161,7 @@ export const io = (server) => {
 		client.on('db:members:archive', function(data) { handleAction(client, 'db:members:archive:done', data, archiveMembers); });
 		client.on('db:members:importFamilies', function(data) { handleAction(client, 'db:members:importFamilies:done', data, importFamilies); });
 		client.on('db:members:fetchFamilies', function(data) { handleAction(client, 'db:members:fetchFamilies:done', data, ybFetchFamilies); });
+		client.on('db:members:fetchMembers', function(data) { handleAction(client, 'db:members:fetchMembers:done', data, fetchQuorumMembers); });
 
 		client.on('db:wardMembers:import', function(data) { handleAction(client, 'db:wardMembers:import:done', data, importWardMembers); });
 		client.on('db:wardMembers:archive', function(data) { handleAction(client, 'db:wardMembers:archive:done', data, archiveWardMembers); });

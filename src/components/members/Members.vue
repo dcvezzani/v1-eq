@@ -52,6 +52,7 @@
         <button @click="createNotes" class="button is-link">Create Notes</button>
         <button @click="fetchFamilyDetails" class="button is-link">Fetch Details</button>
         <button @click="fetchFamilyDetailsBatch" class="button is-link">Fetch Details (Batch)</button>
+        <button @click="fetchFamiliesInfo" class="button is-link">Family Info</button>
         <p class="toast" v-html="messages.actions"></p>
         
       <div class="columns">
@@ -135,6 +136,24 @@
                   <img v-for="other in memberInfo.otherHouseholdMembers" :key="other.individualId" :src="(other.photoUrl.length > 0) ? other.photoUrl : 'http://localhost:8095/photos/person-placeholder.jpg'" :title="other.name" class="memberPhoto">
                 </div>
               </div>
+
+              <div v-if="memberInfos2.length > 0" class="member-info">
+                <p class="title">Contact Info:</p>
+                <div v-for="family in memberInfos2" :key="family.id" class="family-info" >
+                  <div class="member-info-name">{{family.coupleName}}</div>
+                  <div class="member-info-address">{{family.address}}</div>
+                  <div class="member-info-phone"><span v-html="formattedPhone(family.phone)"></span> </div>
+                  <div class="member-info-email"><span v-html="formattedEmail(family.email)"></span> </div>
+                  <div class="member-info-notes"><a :href="family.notes_url" target="_family_notes">{{family.notes_url}}</a> </div>
+                  <div>&nbsp;</div>
+                  <img :src="memberPhotoUrl(family.headOfHouse_individualId)" :title="family.headOfHouse_preferredName" class="memberPhoto">
+                  <img :src="memberPhotoUrl(family.headOfHouse_individualId, 'family', 'ward')" :title="family.coupleName" class="memberPhoto">
+                  <img :src="memberPhotoUrl(family.spouse_individualId, null, 'ward')" :title="family.spouse_preferredName" class="memberPhoto">
+                  <div>Number of children: {{family.numberOfChildren}}</div>
+                  <hr>
+                </div>
+              </div>
+              
             </div>
           </div>
 
@@ -233,6 +252,7 @@ export default {
       memberPhoto: '',
       memberPhotos: [],
       memberInfo: null,
+      memberInfos2: [],
       selectedActiveTab: 'details', 
       tags: [],
       newTagName: null,
@@ -261,6 +281,17 @@ export default {
     },
   },
   methods: {
+    junk: function() {
+		},
+    memberPhotoUrl: function(memberId, suffix, src='') {
+      const domainPort = (src === 'ward') ? 'localhost:8096' : 'localhost:8095'
+      if (suffix) return `http://${domainPort}/photos/${memberId}-${suffix}`
+      else return `http://${domainPort}/photos/${memberId}`
+		},
+    fetchFamiliesInfo: function(refresh = true) {
+      const memberIds = this.selectedMembers.map(member => member.id);
+      this.$socket.emit('db:wardMembers:fetch', {memberIds});
+		},
     toggleListLoader: function(event) { 
       this.listLoaderActive = !(this.listLoaderActive);
     }, 
@@ -466,6 +497,10 @@ export default {
     }, 
   },
   sockets:{
+    "db:wardMembers:fetch:done": function(data){
+		  console.log('db:wardMembers:fetch:done', data);
+      this.memberInfos2 = data.responsePayload;
+    },
     "db:tags:db:tags:createTagGroups:done": function(data){
 		  console.log('db:tags:db:tags:createTagGroups:done', data);
       if (data.err) {
