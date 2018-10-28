@@ -2,7 +2,7 @@
   <div id="app">
     <!-- img src="./assets/logo.png" -->
 
-    <div class="router-links-container" style="">
+    <div class="router-links-container" style="display: block;">
       <div class="router-links">
         <router-link to="/">FormatVisitRequest</router-link> |
         <router-link to="/ListMembers">ListMembers</router-link> |

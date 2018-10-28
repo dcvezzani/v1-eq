@@ -6,7 +6,7 @@
     <ul v-if="members.length > 0" class="yearbook">
       <li v-for="member in members" :key="member.id"> <div class="member"> <div class="photo" :style="bgPhoto(member)"></div> 
       <img :src="memberPhoto(member)" class="member" alt="">
-      <p>{{member.name.slice(0,18)}}</p><p style="">{{member.id}}</p> </div> </li>
+      <p>{{member.name.slice(0,18)}}</p><p style="display: block;">{{member.id}}</p> </div> </li>
       
     </ul>
 

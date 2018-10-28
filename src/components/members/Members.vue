@@ -127,8 +127,10 @@
                   <img v-show="memberInfo.householdInfo.photoUrl.length > 0" :src="memberInfo.householdInfo.photoUrl" :title="memberInfo.householdInfo.name + ' family'" class="memberPhoto">
                   <img v-show="memberInfo.householdInfo.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" :title="memberInfo.householdInfo.name + ' family'" class="memberPhoto">
                   
-                  <img v-show="memberInfo.spouse.photoUrl.length > 0" :src="memberInfo.spouse.photoUrl" title="spouse" class="memberPhoto">
-                  <img v-show="memberInfo.spouse.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" :title="memberInfo.spouse.name" class="memberPhoto">
+                  <span v-if="memberInfo.spouse">
+                    <img v-show="memberInfo.spouse.photoUrl.length > 0" :src="memberInfo.spouse.photoUrl" title="spouse" class="memberPhoto">
+                    <img v-show="memberInfo.spouse.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" :title="memberInfo.spouse.name" class="memberPhoto">
+                  </span>
 
                   <img v-for="other in memberInfo.otherHouseholdMembers" :key="other.individualId" :src="(other.photoUrl.length > 0) ? other.photoUrl : 'http://localhost:8095/photos/person-placeholder.jpg'" :title="other.name" class="memberPhoto">
                 </div>
@@ -301,18 +303,27 @@ export default {
       });
       this[listName] = newList;
       this.checkedLists = {};
+      if (listName === 'selectedMembers') this.memberInfo = null;
 		},
     formattedAddress: function(address) {
       const { addr1, addr2, addr3 } = address;
       return [addr1, addr2, addr3].join(" ");
     },
     formattedPhone: function(phone) {
-      const cleanPhone = phone.toString().replace(/^\W+/, '').replace(/\W+$/, '');
-      return ` <a href="tel:${cleanPhone}">${cleanPhone}</a> `;
+      if (phone) {
+        const cleanPhone = phone.toString().replace(/^\W+/, '').replace(/\W+$/, '');
+        return ` <a href="tel:${cleanPhone}">${cleanPhone}</a> `;
+      } else {
+        return ` <span>Phone n/a</span> `;
+      }
     },
     formattedEmail: function(email) {
+      if (email) {
       const cleanEmail = email.toString().replace(/^\W+/, '').replace(/\W+$/, '');
       return ` <a href="mailto:${cleanEmail}">${cleanEmail}</a> `;
+      } else {
+        return ` <span>Email n/a</span> `;
+      }
     },
 
     deleteTag: function() {
