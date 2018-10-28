@@ -119,9 +119,20 @@
                 <div class="member-info-address">{{formattedAddress(memberInfo.householdInfo.address)}}</div>
                 <div class="member-info-phone"><span v-html="formattedPhone(memberInfo.householdInfo.phone)"></span> </div>
                 <div class="member-info-email"><span v-html="formattedEmail(memberInfo.headOfHousehold.email)"></span> </div>
-              </div>
 
-              <div v-for="{ name, photoUrl } in memberPhotos" class="memberPhoto"><img :src="photoUrl" :title="name"></div>
+                <div style="text-align: left">
+                  <img v-show="memberInfo.headOfHousehold.photoUrl.length > 0" :src="memberInfo.headOfHousehold.photoUrl" title="headOfHousehold" class="memberPhoto">
+                  <img v-show="memberInfo.headOfHousehold.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" :title="memberInfo.headOfHousehold.name" class="memberPhoto">
+                  
+                  <img v-show="memberInfo.householdInfo.photoUrl.length > 0" :src="memberInfo.householdInfo.photoUrl" :title="memberInfo.householdInfo.name + ' family'" class="memberPhoto">
+                  <img v-show="memberInfo.householdInfo.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" :title="memberInfo.householdInfo.name + ' family'" class="memberPhoto">
+                  
+                  <img v-show="memberInfo.spouse.photoUrl.length > 0" :src="memberInfo.spouse.photoUrl" title="spouse" class="memberPhoto">
+                  <img v-show="memberInfo.spouse.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" :title="memberInfo.spouse.name" class="memberPhoto">
+
+                  <img v-for="other in memberInfo.otherHouseholdMembers" :key="other.individualId" :src="(other.photoUrl.length > 0) ? other.photoUrl : 'http://localhost:8095/photos/person-placeholder.jpg'" :title="other.name" class="memberPhoto">
+                </div>
+              </div>
             </div>
           </div>
 
@@ -545,30 +556,34 @@ export default {
     "sendShellCommand:fetchFamilyDetails:done": function(data){
       console.log("sendShellCommand:fetchFamilyDetails:done", data);
       const memberDetails = JSON.parse(data.json);
-      console.log("memberDetails", memberDetails);
       this.memberInfo = memberDetails;
 
       {
         setTimeout(() => {this.fetchPhotoFile(data.memberId, memberDetails.headOfHousehold.photoUrl);}, 3000);
       }
 
-      this.memberPhotos.length = 0;
-      if (memberDetails.headOfHousehold) {
-        const { name, photoUrl } = memberDetails.headOfHousehold;
-        if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      const familyId = `${memberDetails.householdInfo.individualId}-family`;
+      {
+        setTimeout(() => {this.fetchPhotoFile(familyId, memberDetails.householdInfo.photoUrl);}, 3000);
       }
-      if (memberDetails.spouse) {
-        const { name, photoUrl } = memberDetails.spouse;
-        if (photoUrl) this.memberPhotos.push({ name, photoUrl });
-      }
-      if (memberDetails.householdInfo) {
-        const { name, photoUrl } = memberDetails.householdInfo;
-        if (photoUrl) this.memberPhotos.push({ name, photoUrl });
-      }
-      memberDetails.otherHouseholdMembers.forEach(other => {
-        const { name, photoUrl } = other;
-        if (photoUrl) this.memberPhotos.push({ name, photoUrl });
-      });
+
+      // this.memberPhotos.length = 0;
+      // if (memberDetails.headOfHousehold) {
+      //   const { name, photoUrl } = memberDetails.headOfHousehold;
+      //   if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      // }
+      // if (memberDetails.spouse) {
+      //   const { name, photoUrl } = memberDetails.spouse;
+      //   if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      // }
+      // if (memberDetails.householdInfo) {
+      //   const { name, photoUrl } = memberDetails.householdInfo;
+      //   if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      // }
+      // memberDetails.otherHouseholdMembers.forEach(other => {
+      //   const { name, photoUrl } = other;
+      //   if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      // });
 
       // this.memberPhoto = (memberDetails.headOfHousehold.individualId === data.memberId) ? memberDetails.headOfHousehold.photoUrl : memberDetails.spouse.photoUrl;
     },
@@ -625,5 +640,8 @@ p.title {
 .tag-list, 
 .tag-list li {
   text-align: right; 
+}
+.memberPhoto {
+  width: 100px;
 }
 </style>

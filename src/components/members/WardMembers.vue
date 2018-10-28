@@ -74,7 +74,13 @@
               <div class="member-info-phone"><span v-html="formattedPhone(family.householdInfo.phone)"></span> </div>
               <div class="member-info-email"><span v-html="formattedEmail(family.headOfHousehold.email)"></span> </div>
               <div>&nbsp;</div>
+              <img v-show="family.headOfHousehold.photoUrl.length > 0" :src="family.headOfHousehold.photoUrl" title="headOfHousehold" class="memberPhoto">
+              <img v-show="family.headOfHousehold.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" title="headOfHousehold" class="memberPhoto">
+              
+              <img v-show="family.householdInfo.photoUrl.length > 0" :src="family.householdInfo.photoUrl" title="householdInfo" class="memberPhoto">
+              <img v-show="family.householdInfo.photoUrl.length === 0" src="http://localhost:8095/photos/person-placeholder.jpg" title="householdInfo" class="memberPhoto">
             </div>
+
           </div>
       
         </div>
@@ -265,6 +271,7 @@ export default {
     },
     "sendShellCommand:updateContactInfo:done": function(data){
       const memberInfo = JSON.parse(data.json);
+      console.log(">>>memberInfo", memberInfo);
 		  console.log('sendShellCommand:updateContactInfo:done', memberInfo);
 
       const { photoUrl: hohPhotoUrl, individualId: hohId } = memberInfo.headOfHousehold;
@@ -303,6 +310,26 @@ export default {
 
       this.memberInfo = memberInfo;
       this.memberInfos.push(memberInfo);
+
+
+      // this.memberPhotos.length = 0;
+      // if (memberInfo.headOfHousehold) {
+      //   const { name, photoUrl } = memberInfo.headOfHousehold;
+      //   if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      // }
+      // if (memberInfo.spouse) {
+      //   const { name, photoUrl } = memberInfo.spouse;
+      //   if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      // }
+      // if (memberInfo.householdInfo) {
+      //   const { name, photoUrl } = memberInfo.householdInfo;
+      //   if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      // }
+      // memberInfo.otherHouseholdMembers.forEach(other => {
+      //   const { name, photoUrl } = other;
+      //   if (photoUrl) this.memberPhotos.push({ name, photoUrl });
+      // });
+      
     },
     "sendShellCommand:fetchMemberListSummary:done": function(data){
 		  console.log('sendShellCommand:fetchMemberListSummary:done', data);
@@ -372,6 +399,9 @@ export default {
 }
 .member-info div {
   text-align: left; 
+}
+.memberPhoto {
+  width: 100px;
 }
 </style>
 
