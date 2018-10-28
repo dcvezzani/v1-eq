@@ -5,7 +5,8 @@ import db from './db';
 import TagAssociation from './src/models/tag_associations';
 import Tag from './src/models/tags';
 
-const associationIds = [];
+const associationIds = [1699810481, 943594479];
+// const associationIds = [];
 // const associationIds = [3740717047, 906971831, 6396643461, 3696620650, 2801880288, 4772666515];
 const tagName = "visited";
 
