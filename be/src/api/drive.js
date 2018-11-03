@@ -33,7 +33,7 @@ export const listFamilyNotes = (data, callback) => {
 };
 
 export const findFamilyNotes = (data, callback) => {
-  authorize(auth, {query: `name="${data.name}" and trashed=false`}, findFiles, callback);
+  authorize(auth, {query: `name="${data.name}" and trashed=false and parents in "18E7UueFZQwMcZprIvmJhfsX-tNNn0hH5"`}, findFiles, callback);
 };
 
 export const fetchDbBackup = (data, callback) => {
@@ -314,6 +314,13 @@ function updateDoc2(auth, data, callback) {
  */
 
   
+// setTimeout(() => {
+// // 1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI
+// findFamilyNotes({name: 'Ahlmann, Justin & Shelby Marie'}, (err, res) => {
+//   console.log(">>>findFamilyNotes", {err, res})
+// })
+// }, 2000);
+
 // todo: getting Error 413 (Request Entity Too Large)!!  Need to find an alternate method of updating docs in google docs (non-Google Doc)
 // setTimeout(() => {
 // // 1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI
