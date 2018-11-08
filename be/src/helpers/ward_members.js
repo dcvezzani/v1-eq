@@ -158,7 +158,7 @@ const importMember = (member, callback) => {
 
         const notes_url = `https://docs.google.com/document/d/${res.data.id}`
         session.memberDetails = { ...member, notes_url }
-        cb(null, files)
+        cb(null, { ...member, notes_url })
       });
     }, 
     recordInDb: (cb) => {
