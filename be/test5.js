@@ -25,6 +25,8 @@ const sqlite3 = require('sqlite3').verbose();
 const TOKEN_PATH = 'token-sheets.json';
 // const DRIVE_TOKEN_PATH = 'token.json';
 
+const SPREAD_SHEET_ID = '16YX_lBxUppMiruNk8-ImzhpHzr8OoElQ6KE-xBT8ZG0';
+
 var sheets = google.sheets('v4');
 
 function create(authClient) {
@@ -33,7 +35,7 @@ function create(authClient) {
       // TODO: Add desired properties to the request body.
       //
       "properties": {
-        "title": "ZZZ"
+        "title": "v1-eq-member-details"
       },
       "sheets": [
         {
@@ -207,7 +209,7 @@ db2.all(sql, [], (err, rows) => {
 function update(authClient, dataRows, callback) {
   console.log(">>>headerRow()", JSON.stringify(headerRow()));
   var request = {
-    spreadsheetId: '1VxzIopYTxpj_XmPtF4XraZcobmP6Bnqc_etq8KZoAbM',
+    spreadsheetId: SPREAD_SHEET_ID, 
     resource: {
       "requests": [
         {
@@ -448,7 +450,7 @@ function update(authClient, dataRows, callback) {
 function update_old(authClient, dataRows, callback) {
   console.log(">>>headerRow()", JSON.stringify(headerRow()));
   var request = {
-    spreadsheetId: '1VxzIopYTxpj_XmPtF4XraZcobmP6Bnqc_etq8KZoAbM',
+    spreadsheetId: SPREAD_SHEET_ID, 
     resource: {
       "requests": [
         {

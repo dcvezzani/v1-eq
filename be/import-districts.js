@@ -4,7 +4,7 @@ import _ from 'lodash';
 import fs from 'fs';
 import db from './db';
 
-fs.readFile('../data/work/districts.json', (err, content) => {
+fs.readFile('districts.json', (err, content) => {
   if (err) return console.error("Unable to read file");
 
   const districts = JSON.parse(content);
@@ -31,7 +31,7 @@ fs.readFile('../data/work/districts.json', (err, content) => {
 const records = {districts: [], assignments: []};
 const chunkSize = 10;
 
-fs.readFile('../data/work/districts.json', (err, content) => {
+fs.readFile('districts.json', (err, content) => {
   if (err) return console.error("Unable to read file");
 
   const districts = JSON.parse(content);
@@ -42,7 +42,6 @@ fs.readFile('../data/work/districts.json', (err, content) => {
 
     const {districtName, districtUuid, supervisorName, supervisorPersonUuid} = district;
     records["districts"].push({districtName, districtUuid, supervisorName, supervisorPersonUuid})
-    db.select('name').from('users')
     
     const store = {districtId: -1};
     async.series({

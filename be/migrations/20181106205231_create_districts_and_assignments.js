@@ -21,6 +21,7 @@ exports.up = function(knex, Promise) {
             t.integer('companionship_id').unsigned();
             t.dateTime('createdAt').notNull().defaultTo(knex.fn.now())
             t.dateTime('updatedAt').nullable();
+            t.dateTime('versionedAt').nullable();
 
             t.string('type').notNull();
             t.integer('legacyCmisId').unsigned();
