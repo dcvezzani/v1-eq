@@ -46,7 +46,7 @@ async.series({
     .asCallback((err, ids) => cb());
   }, 
   eastlake: (cb) => {
-    db.schema.raw("select id from ward_members where archived_at is null and upper(address) like '%180 S%' or upper(address) like '%140 S%' or upper(address) like '%1990 W%' or upper(address) like '%1850 W%'")
+    db.schema.raw("select id from ward_members where archived_at is null and (upper(address) not like '%Dry%' and (upper(address) like '%180 S%' or upper(address) like '%140 S%' or upper(address) like '%1990 W%' or upper(address) like '%1850 W%'))")
     .asCallback((err, ids) => TagAssociation.createWithAssociations("ward_members", "eastlake", "Neighborhood where members live", ids.map(id => id.id), cb));
   }, 
   meadows: (cb) => {

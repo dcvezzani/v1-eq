@@ -74,6 +74,7 @@ const sendShellCommandWithType = (client, type, data, callback) => {
   // console.log(`${type}: ${JSON.stringify(data).slice(0,200)}...`);
   const label = type.replace(/\w/, c => c.toUpperCase());
 
+  console.log(">>>data.redirects", data.redirects);
   const ioAction = (data.redirects) ? data.redirects : [`sendShellCommand:${type}:done`];
   console.log(`sendShellCommandWithType`, type, data);
   const ldsCookie = getLdsCookie(data.cmd);

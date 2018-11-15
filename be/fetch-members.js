@@ -1,22 +1,33 @@
 import io from 'socket.io-client';
 import fs from 'fs';
 import btoa from 'btoa';
+// import { createNotes } from '../src/fetch';
 
 const CURL_COMMAND_FILE = '/Users/davidvezzani/clients/v1-eq/be/lds-cookie.txt'
 const state = {curlCommand: null, 
   ward: {initialFetchDone: false, importDone: false, archiveDone: false, updatedContactInfoDone: false, fetchPhotoFileTarget: 3, fetchPhotoFileCnt: 0, memberInfos: [], }, 
-  eq:   {initialFetchDone: false, importDone: false, archiveDone: false, updatedContactInfoDone: false, fetchPhotoFileTarget: 3, fetchPhotoFileCnt: 0, memberInfos: [], }, 
+  eq:   {initialFetchDone: false, importDone: false, archiveDone: false, updatedContactInfoDone: false, fetchPhotoFileTarget: 3, fetchPhotoFileCnt: 0, memberInfos: [], memberInfo: null, memberPhotos: [], memberPhoto: null, }, 
 };
 const socket = io('http://localhost:3000', { path: '/io-eq-v1'});
 
-const workFlow = () => {
+const wardWorkFlow = () => {
   if (!state.ward.initialFetchDone) {
     state.ward.initialFetchDone = true;
-    importMembers()
+    importWardMembers()
   }
-  else if (!state.ward.archiveDone) archiveMembers()
-  else if (!state.ward.updatedContactInfoDone) updateContactInfo(state.ward.members.slice(0,1))
+  else if (!state.ward.archiveDone) archiveWardMembers()
+  else if (!state.ward.updatedContactInfoDone) updateWardContactInfo(state.ward.members.slice(0,1))
   else console.log("DONE", {fetching: state.ward.members.length, importing: state.ward.newRecords.length, archiving: state.ward.removedIds, updatedContactInfo: true})
+};
+
+const eqWorkFlow = () => {
+  if (!state.eq.initialFetchDone) {
+    state.eq.initialFetchDone = true;
+    importEqMembers()
+  }
+  else if (!state.eq.archiveDone) archiveEqMembers()
+  else if (!state.eq.updatedContactInfoDone) fetchFamilyDetailsBatch(state.eq.members.slice(0,1))
+  else console.log("DONE", {fetching: state.eq.members.length, importing: state.eq.newRecords.length, archiving: state.eq.removedIds, updatedContactInfo: true})
 };
 
 // Fetch members
@@ -26,10 +37,22 @@ const fetchEqMembers = (refresh) => {
   socket.emit('sendShellCommand:fetchMembers', options);
 };
 
-const fetchMembers = (refresh) => {
+const fetchWardMembers = (refresh) => {
   const options = (refresh) ? {cmd: btoa(state.curlCommand), refresh} : {cmd: ''}
   socket.emit('sendShellCommand:fetchMemberListSummary', options);
 };
+
+socket.on('sendShellCommand:fetchMembers:done', (data) => {
+  if (data.err) return console.error(data.err);
+  const parsedData = JSON.parse(data.stdout)[0];
+  state.eq.members = parsedData.members;
+  state.eq.newRecords = data.newRecords || [];
+  state.eq.removedIds = data.removedIds || [];
+  const diffRecordsLength = state.eq.newRecords.length + state.eq.removedIds.length;
+  console.log('fetched', {msg: `Successful fetch.  ${(diffRecordsLength === 0) ? 'Local records are already synched.' : 'Updates found.'}`, newRecords: state.eq.newRecords, removedIds: state.eq.removedIds, membersCnt: state.eq.members.length});
+  
+  eqWorkFlow();
+});
 
 socket.on('sendShellCommand:fetchMemberListSummary:done', (data) => {
   console.log('sendShellCommand:fetchMemberListSummary:done', {msg: `Successful fetch; ${JSON.stringify(data).slice(0,100)}...`});
@@ -41,74 +64,176 @@ socket.on('sendShellCommand:fetchMemberListSummary:done', (data) => {
   const diffRecordsLength = state.ward.newRecords.length + state.ward.removedIds.length;
   console.log('fetched', {msg: `Successful fetch.  ${(diffRecordsLength === 0) ? 'Local records are already synched.' : 'Updates found.'}`, newRecords: state.ward.newRecords, removedIds: state.ward.removedIds, membersCnt: state.ward.members.length});
 
-  workFlow();
+  wardWorkFlow();
 });
 
 // Import members
 
 const importEqMembers = () => {
-  socket.emit('db:members:import', {members: state.newRecords});
+  importMembers(state.eq, 'db:members:import', fetchEqMembers)
 };
 
-const importMembers = () => {
-  if (state.ward.newRecords.length > 0) {
-    socket.emit('db:wardMembers:import', {members: state.ward.newRecords});
+const importWardMembers = () => {
+  importMembers(state.ward, 'db:wardMembers:import', fetchWardMembers)
+};
+
+const importMembers = (store, ioPath, fetch) => {
+  console.log(">>>state", state);
+  if (store.newRecords.length > 0) {
+    socket.emit(ioPath, {members: store.newRecords});
   } else {
-    state.ward.importDone = true;
-    fetchMembers(false);
+    store.importDone = true;
+    fetch(false);
   }
 };
 
 socket.on('db:members:import:done', (data) => {
   console.log('db:members:import:done', data);
-  
-  if (data.err) {
-    console.error("EQ member import error", data.err);
-  } else {
-    console.log("EQ member import", {msg: `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`, });
-    state.importDone = true;
-    fetchMembers(false);
-  }
+  importDone('eq', data, fetchEqMembers);
 });
 
 socket.on('db:wardMembers:import:done', (data) => {
   console.log('db:wardMembers:import:done', data);
-  
-  if (data.err) {
-    console.error("Import error", data.err);
-  } else {
-    console.log("import", {msg: `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`, });
-    state.ward.importDone = true;
-    fetchMembers(false);
-  }
+  importDone('ward', data, fetchWardMembers);
 });
 
-// Archive members
-
-const archiveMembers = () => {
-  if (state.ward.removedIds.length > 0) {
-    socket.emit('db:wardMembers:archive', {memberIds: state.ward.removedIds});
+const importDone = (type, data, fetch) => {
+  const store = state[type]
+  if (data.err) {
+    console.error(`Import ${type} error`, data.err);
   } else {
-    state.ward.archiveDone = true;
-    fetchMembers(false);
+    console.log(`import ${type}`, {msg: `Successful import; ${JSON.stringify(data.payload).slice(0,100)}...`, });
+    store.importDone = true;
+    fetch(false);
   }
 };
 
+
+// Archive members
+
+const archiveEqMembers = () => {
+  archiveMembers(state.eq, 'db:members:archive', fetchEqMembers)
+};
+
+const archiveWardMembers = () => {
+  archiveMembers(state.ward, 'db:wardMembers:archive', fetchWardMembers)
+};
+
+const archiveMembers = (store, ioPath, fetch) => {
+  if (store.newRecords.length > 0) {
+    socket.emit(ioPath, {memberIds: store.removedIds});
+  } else {
+    store.archiveDone = true;
+    fetch(false);
+  }
+};
+
+socket.on('db:members:archive:done', (data) => {
+  console.log('db:members:archive:done', data);
+  archiveDone('eq', data, fetchEqMembers);
+});
+
 socket.on('db:wardMembers:archive:done', (data) => {
   console.log('db:wardMembers:archive:done', data);
-
-  if (data.err) {
-    console.error("Archive error", data.err);
-  } else {
-    console.log('archive', {msg: `Successful archival; ${JSON.stringify(data.payload).slice(0,100)}...`});
-    state.ward.archiveDone = true;
-    fetchMembers(false);
-  }
+  archiveDone('ward', data, fetchWardMembers);
 });
+
+const archiveDone = (type, data, fetch) => {
+  const store = state[type]
+  if (data.err) {
+    console.error(`Archive ${type} error`, data.err);
+  } else {
+    console.log(`archive ${type}`, {msg: `Successful archival; ${JSON.stringify(data.payload).slice(0,100)}...`, });
+    store.archiveDone = true;
+    fetch(false);
+  }
+};
+
 
 // Update contact info, fetch images
 
-const updateContactInfo = (selectedMembers) => {
+const fetchFamilyDetailsBatch = (selectedMembers, refresh = true) => {
+  const increment = 3000
+  let offset = 0
+  selectedMembers.forEach(member => {
+    offset += increment;
+    setTimeout(() => {
+      console.log(`fetching details for member: ${member.id}, ${member.name}`)
+      socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(state.curlCommand), memberId: member.id, refresh: (refresh === true)});
+      // socket.emit('sendShellCommand:fetchFamilyDetails', {cmd: btoa(this.fetchCommand), memberId: member.id, refresh: true, redirects: ['sendShellCommand:fetchFamilyDetails:createNotes:done', 'sendShellCommand:fetchFamilyDetails:done']});
+      
+    }, offset);
+  });
+};
+
+// socket.on('sendShellCommand:fetchFamilyDetails:createNotes:done', (data) => {
+//   const familyDetails = JSON.parse(data.json);
+//   console.log("sendShellCommand:fetchFamilyDetails:createNotes:done", familyDetails);
+//
+//   console.log(`#createNotes for ${familyDetails.coupleName}`);
+//   // createNotes(familyDetails.coupleName, (err, res) => {
+//   //   console.log("createNotes", err, res);
+//   //   console.log('actions', {msg: `Notes created: <a target="_new" href="https://docs.google.com/document/d/${res.body.apiRes.data.id}/edit">${familyDetails.coupleName}</a>`, });
+//   // });
+// });
+
+const fetchPhotoFile = (memberId, photoUrl) => {
+  console.log(`fetching fetchPhotoFile for memberId: ${memberId}`)
+  socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(state.curlCommand), memberId, photoUrl, refresh: true});
+  // , redirects: ['sendShellCommand:eq:fetchPhotoFile:done']
+};
+
+const fetchEqPhotoFile = (memberId, photoUrl) => {
+  console.log(`fetching fetchPhotoFile for memberId: ${memberId}`)
+  socket.emit('sendShellCommand:fetchPhotoFile', {cmd: btoa(state.curlCommand), memberId, photoUrl, refresh: true, redirects: ['sendShellCommand:eq:fetchPhotoFile:done']});
+  // 
+};
+
+
+// socket.on('sendShellCommand:fetchPhotoFile:done', (data) => {
+//   console.log("sendShellCommand:fetchPhotoFile:done", data);
+// });
+
+socket.on('sendShellCommand:fetchFamilyDetails:done', (data) => {
+  console.log("sendShellCommand:fetchFamilyDetails:done", data);
+  const memberDetails = JSON.parse(data.json);
+  state.eq.memberInfo = memberDetails;
+
+  {
+    setTimeout(() => {fetchEqPhotoFile(data.memberId, memberDetails.headOfHousehold.photoUrl);}, 3000);
+  }
+
+  const familyId = `${memberDetails.householdInfo.individualId}-family`;
+  {
+    setTimeout(() => {fetchEqPhotoFile(familyId, memberDetails.householdInfo.photoUrl);}, 3000);
+  }
+
+  // state.eq.memberPhotos.length = 0;
+  // if (memberDetails.headOfHousehold) {
+  //   const { name, photoUrl } = memberDetails.headOfHousehold;
+  //   if (photoUrl) state.eq.memberPhotos.push({ name, photoUrl });
+  // }
+  // if (memberDetails.spouse) {
+  //   const { name, photoUrl } = memberDetails.spouse;
+  //   if (photoUrl) state.eq.memberPhotos.push({ name, photoUrl });
+  // }
+  // if (memberDetails.householdInfo) {
+  //   const { name, photoUrl } = memberDetails.householdInfo;
+  //   if (photoUrl) state.eq.memberPhotos.push({ name, photoUrl });
+  // }
+  // memberDetails.otherHouseholdMembers.forEach(other => {
+  //   const { name, photoUrl } = other;
+  //   if (photoUrl) state.eq.memberPhotos.push({ name, photoUrl });
+  // });
+
+  // state.eq.memberPhoto = (memberDetails.headOfHousehold.individualId === data.memberId) ? memberDetails.headOfHousehold.photoUrl : memberDetails.spouse.photoUrl;
+
+  state.eq.updatedContactInfoDone = true;
+  eqWorkFlow();
+});
+  
+
+const updateWardContactInfo = (selectedMembers) => {
   const offsetAmount = 3000;
   let offset = 0;
 
@@ -122,14 +247,30 @@ const updateContactInfo = (selectedMembers) => {
   });
 };
 
+socket.on('sendShellCommand:eq:fetchPhotoFile:done', (data) => {
+  console.log('sendShellCommand:eq:fetchPhotoFile:done', data);
+
+  // state.ward.fetchPhotoFileCnt += 1
+  // if (state.ward.fetchPhotoFileCnt >= state.ward.fetchPhotoFileTarget) {
+  //   state.ward.updatedContactInfoDone = true;
+  //   wardWorkFlow();
+  // }
+
+  state.ward.updatedContactInfoDone = true;
+  eqWorkFlow();
+});
+
 socket.on('sendShellCommand:fetchPhotoFile:done', (data) => {
   console.log('sendShellCommand:fetchPhotoFile:done', data);
 
-  state.ward.fetchPhotoFileCnt += 1
-  if (state.ward.fetchPhotoFileCnt >= state.ward.fetchPhotoFileTarget) {
-    state.ward.updatedContactInfoDone = true;
-    workFlow();
-  }
+  // state.ward.fetchPhotoFileCnt += 1
+  // if (state.ward.fetchPhotoFileCnt >= state.ward.fetchPhotoFileTarget) {
+  //   state.ward.updatedContactInfoDone = true;
+  //   wardWorkFlow();
+  // }
+
+  state.ward.updatedContactInfoDone = true;
+  wardWorkFlow();
 });
 
 socket.on('sendShellCommand:updateContactInfo:done', (data) => {
@@ -203,7 +344,8 @@ socket.on('joined', (msg) => {
     if (err) return console.error("Unable to read curl command file", e);
 
     state.curlCommand = curlCommand
-    fetchMembers(true);
+    fetchWardMembers(true);
+    // fetchEqMembers(true);
   });
 });
 
