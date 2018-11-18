@@ -16,7 +16,7 @@ const wardWorkFlow = () => {
     importWardMembers()
   }
   else if (!state.ward.archiveDone) archiveWardMembers()
-  else if (!state.ward.updatedContactInfoDone) updateWardContactInfo(state.ward.members.slice(0,1))
+  // else if (!state.ward.updatedContactInfoDone) updateWardContactInfo(state.ward.members.slice(0,1))
   else console.log("DONE", {fetching: state.ward.members.length, importing: state.ward.newRecords.length, archiving: state.ward.removedIds, updatedContactInfo: true})
 };
 
@@ -26,7 +26,7 @@ const eqWorkFlow = () => {
     importEqMembers()
   }
   else if (!state.eq.archiveDone) archiveEqMembers()
-  else if (!state.eq.updatedContactInfoDone) fetchFamilyDetailsBatch(state.eq.members.slice(0,1))
+  // else if (!state.eq.updatedContactInfoDone) fetchFamilyDetailsBatch(state.eq.members.slice(0,1))
   else console.log("DONE", {fetching: state.eq.members.length, importing: state.eq.newRecords.length, archiving: state.eq.removedIds, updatedContactInfo: true})
 };
 
@@ -345,7 +345,7 @@ socket.on('joined', (msg) => {
 
     state.curlCommand = curlCommand
     fetchWardMembers(true);
-    // fetchEqMembers(true);
+    fetchEqMembers(true);
   });
 });
 
