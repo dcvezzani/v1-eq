@@ -41,14 +41,18 @@ const contactInformationFor = (data) => {
 
 export const updateContactInfo = (data, callback) => {
   if (data.err) return callback(data.err);
-  const memberInfo = JSON.parse(data.stdout);
-  // const contactInfo = contactInformationFor(memberInfo.headOfHousehold);
-  let contactInfo = mergeContactInfo(memberInfo.headOfHousehold, memberInfo.spouse)
-  contactInfo = mergeContactInfo(contactInfo, memberInfo.householdInfo)
+  try {
+    const memberInfo = JSON.parse(data.stdout);
+    // const contactInfo = contactInformationFor(memberInfo.headOfHousehold);
+    let contactInfo = mergeContactInfo(memberInfo.headOfHousehold, memberInfo.spouse)
+    contactInfo = mergeContactInfo(contactInfo, memberInfo.householdInfo)
 
-  WardMember.updateMemberContactInfo(data.memberId, contactInfo, (err) => {
-    callback(err, {responsePayload: { json: data.stdout, memberId: data.memberId }});
-  });
+    WardMember.updateMemberContactInfo(data.memberId, contactInfo, (err) => {
+      callback(err, {responsePayload: { json: data.stdout, memberId: data.memberId }});
+    });
+  } catch(err) {
+    console.error("Unable to update contact info for", data)
+  }
 };
 
 export const getPhotoUrl = (data, callback) => {

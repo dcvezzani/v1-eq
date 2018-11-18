@@ -38,9 +38,8 @@ const handleAction = (client, ioResponse, data, handler) => {
 const getLdsCookie = (cmd) => {
   try {
     const ldsCmd = new Buffer(cmd, 'base64').toString("ascii");
-    console.log("ldsCmd", ldsCmd.split(/-H/).filter(m => m.match(/^...cookie: /)));
-    const cookie = ldsCmd.split(/-H/).filter(m => m.match(/^...cookie: /))[0].trim().replace(/^[^c]+cookie: (.*)$/, '$1').replace(/' --compressed.*$/, '').replace(/'$/, '');
-    console.log("cookie", cookie)
+    const cookie = ldsCmd.split(/ -H /).filter(m => m.match(/^..cookie: /))[0].trim().replace(/^[^c]+cookie: (.*)$/, '$1').replace(/' --compressed.*$/, '').replace(/'$/, '');
+    console.log(">>>cookie", {ldsCmd, cookie})
     return cookie;
   } catch(e) {
     return null;

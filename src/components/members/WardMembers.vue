@@ -158,8 +158,8 @@ export default {
     junk: function() {
 		},
     memberPhotoUrl: function(memberId, suffix) {
-      if (suffix) return `http://localhost:8095/photos/${memberId}-${suffix}`
-      else return `http://localhost:8095/photos/${memberId}`
+      if (suffix) return `http://localhost:8096/photos/${memberId}-${suffix}`
+      else return `http://localhost:8096/photos/${memberId}`
 		},
     randomFetchLoader: function(event) { 
       const randomMemberIds = _.shuffle(this.unselectedMembers.map(member => member.id)).slice(0,8);

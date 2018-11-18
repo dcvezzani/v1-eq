@@ -9,16 +9,25 @@ import Tag from './src/models/tags';
 node_modules/.bin/babel-node tag-members.js
  */
 
-const associationIds = [ 679788735, 980393084, 1493201575, 1610119595, 1884116100, 1904889839, 1935365788, 2279114990, 2298305116, 3659573346, 3732271111, 3761417061, 5711214272, 6186152688, 6405311555, 7864203481, 21200983239, 33557535057];
+const associationIds = [ 305952852, 485624609, 647557148, 668507827, 679788735, 897069089, 1050786697, 1561316594, 1846492758, 1915926963, 2278693283, 2542041932, 2770642514, 3041249635, 3740717047, 4302306913, 4772666515, 4987261313, 5175830203, 5548385237, 5691848189, 8012209859, 9910525394, 20355979728, 20653054124, 33557535057];
 
 // const associationIds = [];
 // const associationIds = [3740717047, 906971831, 6396643461, 3696620650, 2801880288, 4772666515];
-const tagName = "other-neighborhoods";
+const tagName = "single-sisters";
 
+Tag.createWithMembers(tagName, `Single sisters in the ward`, associationIds, (err, res) => {
+  if (err) return console.error(`Unable to create list, ${tagName} (count: ${associationIds.length})`);
+  console.log(`List created: ${tagName} (count: ${associationIds.length})`)
+});
+
+/*
 Tag.createWithMembers(tagName, `Members who live in the ${tagName} area`, associationIds, (err, res) => {
   if (err) return console.error(`Unable to create list, ${tagName} (count: ${associationIds.length})`);
   console.log(`List created: ${tagName} (count: ${associationIds.length})`)
 });
+
+ */
+
 //	createWithMembers: (name, description, memberIds, callback) => {
 
 /*
