@@ -5,20 +5,12 @@ exports.up = function(knex, Promise) {
     table.increments('id').unsigned().primary()
 
 		// foreign keys
+    table.integer('visit_id').unsigned(); // visits
     table.integer('member_id').unsigned(); // members
-
-		// strings
-    table.string('initials')
-
-		// booleans
-    table.boolean('isEqPresidencyMember')
-
-		// integers
-    // table.integer('actualAge')
 
 		// timestamps
 		table.timestamp('created_at').defaultTo(knex.fn.now())
-		table.timestamp('updated_at')
+		table.timestamp('updated_at').defaultTo(knex.fn.now())
 	})
 	// .then(() => ···)
 	
