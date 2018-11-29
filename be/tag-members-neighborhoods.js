@@ -7,7 +7,7 @@ import TagAssociation from './src/models/tag_associations';
 import Tag from './src/models/tags';
 
 /*
-node_modules/.bin/babel-node tag-members.js
+node_modules/.bin/babel-node tag-members-neighborhoods.js
  */
 
 const createWithMembers = (tagName, ids, callback) => {
