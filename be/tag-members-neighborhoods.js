@@ -38,17 +38,21 @@ const createWithMembers = (tagName, ids, callback) => {
 
 async.series({
   cleanTagAssociations: (cb) => {
-    db.schema.raw("delete from tag_associations where association_type = 'ward_members' and tag_id in (select id from tags where name in ( 'eastlake', 'meadows', 'alloy', 'holdaway', 'other-neighborhoods' ))")
+    db.schema.raw("delete from tag_associations where association_type = 'ward_members' and tag_id in (select id from tags where name in ( 'eastlake', 'meadows', 'alloy', 'holdaway', 'cottonwoods', 'other-neighborhoods' ))")
     .asCallback((err, ids) => cb());
   }, 
   cleanTags: (cb) => {
-    db.schema.raw("delete from tags where name in ( 'eastlake', 'meadows', 'alloy', 'holdaway', 'other-neighborhoods' )")
+    db.schema.raw("delete from tags where name in ( 'eastlake', 'meadows', 'alloy', 'holdaway', 'cottonwoods', 'other-neighborhoods' )")
     .asCallback((err, ids) => cb());
   }, 
-  eastlake: (cb) => {
-    db.schema.raw("select id from ward_members where archived_at is null and (upper(address) not like '%Dry%' and (upper(address) like '%180 S%' or upper(address) like '%140 S%' or upper(address) like '%1990 W%' or upper(address) like '%1850 W%'))")
-    .asCallback((err, ids) => TagAssociation.createWithAssociations("ward_members", "eastlake", "Neighborhood where members live", ids.map(id => id.id), cb));
+  cottonwoods: (cb) => {
+    db.schema.raw("select id from ward_members where upper(address) like '%Hackberry%' or upper(address) like '%Serrata%' or upper(address) like '%Samara%' or upper(address) like '%Syracuse%'")
+    .asCallback((err, ids) => TagAssociation.createWithAssociations("ward_members", "cottonwoods", "Neighborhood where members live", ids.map(id => id.id), cb));
   }, 
+  // eastlake: (cb) => {
+  //   db.schema.raw("select id from ward_members where archived_at is null and (upper(address) not like '%Dry%' and (upper(address) like '%180 S%' or upper(address) like '%140 S%' or upper(address) like '%1990 W%' or upper(address) like '%1850 W%'))")
+  //   .asCallback((err, ids) => TagAssociation.createWithAssociations("ward_members", "eastlake", "Neighborhood where members live", ids.map(id => id.id), cb));
+  // }, 
   meadows: (cb) => {
     db.schema.raw("select id from ward_members where upper(address) like '%Sterling%' or upper(address) like '%Silver Oak%' or upper(address) like '%Dry Creek%' or upper(address) like '%Quivira%'")
     .asCallback((err, ids) => TagAssociation.createWithAssociations("ward_members", "meadows", "Neighborhood where members live", ids.map(id => id.id), cb));
@@ -62,7 +66,7 @@ async.series({
     .asCallback((err, ids) => TagAssociation.createWithAssociations("ward_members", "holdaway", "Neighborhood where members live", ids.map(id => id.id), cb));
   }, 
   otherNeighborhoods: (cb) => {
-    db.schema.raw("select id from ward_members where id not in (select id from ward_members where upper(address) like '%Holdaway%') and id not in (select id from ward_members where upper(address) like '%100 S Geneva%') and id not in (select id from ward_members where upper(address) like '%Sterling%' or upper(address) like '%Silver Oak%' or upper(address) like '%Dry Creek%' or upper(address) like '%Quivira%') and id not in (select id from ward_members where upper(address) like '%180 S%' or upper(address) like '%140 S%' or upper(address) like '%1990 W%' or upper(address) like '%1850 W%')")
+    db.schema.raw("select id from ward_members where id not in (select id from ward_members where upper(address) like '%Holdaway%') and id not in (select id from ward_members where upper(address) like '%100 S Geneva%') and id not in (select id from ward_members where upper(address) like '%Sterling%' or upper(address) like '%Silver Oak%' or upper(address) like '%Dry Creek%' or upper(address) like '%Quivira%') and id not in (select id from ward_members where upper(address) like '%180 S%' or upper(address) like '%140 S%' or upper(address) like '%1990 W%' or upper(address) like '%1850 W%') and id not in (select id from ward_members where upper(address) like '%Hackberry%' or upper(address) like '%Serrata%' or upper(address) like '%Samara%' or upper(address) like '%Syracuse%')")
     .asCallback((err, ids) => TagAssociation.createWithAssociations("ward_members", "other-neighborhoods", "Neighborhood where members live", ids.map(id => id.id), cb));
   }, 
 }, 

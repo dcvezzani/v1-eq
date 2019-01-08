@@ -122,6 +122,14 @@ const fetchDataRows = (callback) => {
         cb(err, {name: tagName, cnt: rows.length});
       })
     }, 
+    cottonwoods: (cb) => {
+      const tagName = 'cottonwoods';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    }, 
     other: (cb) => {
       const tagName = 'other-neighborhoods';
       WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
@@ -227,6 +235,37 @@ function update(authClient, dataRows, callback) {
             "sheetId": 1002, 
           }
         }, 
+
+        // {
+        //   "addSheet": {
+        //     "properties": {
+        //       "tabColor": {
+        //         "blue": 0
+        //       },
+        //       "sheetId": 1000, 
+        //       "title": "Eastlake",
+        //       "gridProperties": {
+        //         "columnCount": 10,
+        //         "frozenRowCount": 1
+        //       }, 
+        //     },
+        //   }
+        // }, 
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": 1000, 
+              "title": "Meadows",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        }, 
         {
           "deleteSheet": {
             "sheetId": 1003, 
@@ -238,42 +277,7 @@ function update(authClient, dataRows, callback) {
               "tabColor": {
                 "blue": 0
               },
-              "sheetId": 1000, 
-              "title": "Eastlake",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        }, 
-        {
-          "deleteSheet": {
-            "sheetId": 1004, 
-          }
-        }, 
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
               "sheetId": 1001, 
-              "title": "Meadows",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        }, 
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1002, 
               "title": "Alloy",
               "gridProperties": {
                 "columnCount": 10,
@@ -282,212 +286,6 @@ function update(authClient, dataRows, callback) {
             },
           }
         }, 
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1003, 
-              "title": "Holdaway",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        }, 
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1004, 
-              "title": "Other",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        }, 
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows.eastlake,
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1000, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        }, 
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows.meadows,
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1001, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        }, 
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows.alloy,
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1002, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        }, 
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows.holdaway,
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1003, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        }, 
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows.other,
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1004, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        }, 
-        {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1000, 
-              "index": 1,
-            },
-            "fields": "sheetId,index"
-          }
-        }, 
-        {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1001, 
-              "index": 2,
-            },
-            "fields": "sheetId,index"
-          }
-        }, 
-        {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1002, 
-              "index": 3,
-            },
-            "fields": "sheetId,index"
-          }
-        }, 
-        {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1003, 
-              "index": 4,
-            },
-            "fields": "sheetId,index"
-          }
-        }, 
-        {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1004, 
-              "index": 5,
-            },
-            "fields": "sheetId,index"
-          }
-        }, 
-      ]
-    },
-
-    auth: authClient,
-  }  
-
-  sheets.spreadsheets.batchUpdate(request, function(err, response) {
-    if (err) {
-      console.error(err);
-      return callback(err);
-    }
-
-    // TODO: Change code below to process the `response` object:
-    // console.log(JSON.stringify(response, null, 2));
-    console.log("sheets.spreadsheets.create", {err, response})
-    callback(null, response);
-  });
-  
-}
-
-function update_old(authClient, dataRows, callback) {
-  console.log(">>>headerRow()", JSON.stringify(headerRow()));
-  var request = {
-    spreadsheetId: SPREAD_SHEET_ID, 
-    resource: {
-      "requests": [
-        {
-          "updateSheetProperties": {
-            "properties": {
-              "tabColor": {
-                "red": 0
-              },
-              "sheetId": 1000, 
-              "title": "Eastlake",
-            },
-            "fields": "tabColor,sheetId,title"
-          }
-        }, 
-        {
-          "updateSheetProperties": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1001, 
-              "title": "Meadows",
-            },
-            "fields": "tabColor,sheetId,title"
-          }
-        }, 
-        // {
-        //   "addSheet": {
-        //     "properties": {
-        //       "tabColor": {
-        //         "blue": 0
-        //       },
-        //       "sheetId": 1002, 
-        //       "title": "Alloy",
-        //     },
-        //   }
-        // }, 
         // {
         //   "addSheet": {
         //     "properties": {
@@ -496,75 +294,62 @@ function update_old(authClient, dataRows, callback) {
         //       },
         //       "sheetId": 1003, 
         //       "title": "Holdaway",
-        //     },
-        //   }
-        // }, 
-        // {
-        //   "addSheet": {
-        //     "properties": {
-        //       "tabColor": {
-        //         "blue": 0
-        //       },
-        //       "sheetId": 1004, 
-        //       "title": "Other",
+        //       "gridProperties": {
+        //         "columnCount": 10,
+        //         "frozenRowCount": 1
+        //       }, 
         //     },
         //   }
         // }, 
         {
-          "updateSheetProperties": {
+          "addSheet": {
             "properties": {
               "tabColor": {
                 "blue": 0
               },
               "sheetId": 1002, 
-              "title": "Alloy",
+              "title": "Other",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
             },
-            "fields": "tabColor,sheetId,title"
           }
         }, 
         {
-          "updateSheetProperties": {
+          "addSheet": {
             "properties": {
               "tabColor": {
                 "blue": 0
               },
               "sheetId": 1003, 
-              "title": "Holdaway",
+              "title": "Cottonwoods",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
             },
-            "fields": "tabColor,sheetId,title"
           }
         }, 
-        {
-          "updateSheetProperties": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1004, 
-              "title": "Other",
-            },
-            "fields": "tabColor,sheetId,title"
-          }
-        }, 
+        // {
+        //   "updateCells": {
+        //     "rows": [
+        //       {"values": headerRow() }, 
+        //       dataRows.eastlake,
+        //     ], 
+        //     "fields": "userEnteredValue", 
+        //     "start": {
+        //       "sheetId": 1000, 
+        //       "rowIndex": 0, 
+        //       "columnIndex": 0, 
+        //     }
+        //   }
+        // }, 
         {
           "updateCells": {
             "rows": [
               {"values": headerRow() }, 
-              dataRows.eastlake,
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1000, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        }, 
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows.meadows,
+              dataRows.alloy,
             ], 
             "fields": "userEnteredValue", 
             "start": {
@@ -578,25 +363,39 @@ function update_old(authClient, dataRows, callback) {
           "updateCells": {
             "rows": [
               {"values": headerRow() }, 
-              dataRows.alloy,
+              dataRows.cottonwoods,
             ], 
             "fields": "userEnteredValue", 
             "start": {
-              "sheetId": 1002, 
+              "sheetId": 1003, 
               "rowIndex": 0, 
               "columnIndex": 0, 
             }
           }
         }, 
+        // {
+        //   "updateCells": {
+        //     "rows": [
+        //       {"values": headerRow() }, 
+        //       dataRows.holdaway,
+        //     ], 
+        //     "fields": "userEnteredValue", 
+        //     "start": {
+        //       "sheetId": 1003, 
+        //       "rowIndex": 0, 
+        //       "columnIndex": 0, 
+        //     }
+        //   }
+        // }, 
         {
           "updateCells": {
             "rows": [
               {"values": headerRow() }, 
-              dataRows.holdaway,
+              dataRows.meadows,
             ], 
             "fields": "userEnteredValue", 
             "start": {
-              "sheetId": 1003, 
+              "sheetId": 1000, 
               "rowIndex": 0, 
               "columnIndex": 0, 
             }
@@ -610,10 +409,46 @@ function update_old(authClient, dataRows, callback) {
             ], 
             "fields": "userEnteredValue", 
             "start": {
-              "sheetId": 1004, 
+              "sheetId": 1002, 
               "rowIndex": 0, 
               "columnIndex": 0, 
             }
+          }
+        }, 
+        {
+          "updateSheetProperties": {
+            "properties": {
+              "sheetId": 1001, 
+              "index": 1,
+            },
+            "fields": "sheetId,index"
+          }
+        }, 
+        {
+          "updateSheetProperties": {
+            "properties": {
+              "sheetId": 1003, 
+              "index": 2,
+            },
+            "fields": "sheetId,index"
+          }
+        }, 
+        {
+          "updateSheetProperties": {
+            "properties": {
+              "sheetId": 1000, 
+              "index": 3,
+            },
+            "fields": "sheetId,index"
+          }
+        }, 
+        {
+          "updateSheetProperties": {
+            "properties": {
+              "sheetId": 1002, 
+              "index": 4,
+            },
+            "fields": "sheetId,index"
           }
         }, 
       ]
