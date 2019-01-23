@@ -1,2 +1,2 @@
-export const V1_CACHE_DIR = '/Users/davidvezzani/clients/v1-eq/data';
+export const V1_CACHE_DIR = '/Users/davidvezzani/projects/v1-eq/data';
 

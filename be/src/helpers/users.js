@@ -29,11 +29,11 @@ const dirMemberDetailsCmd = (householdId) => ldsCmd(v1DirMemberDetailsUrl(househ
 const dirEqListingCmd = () => ldsCmd(V1_DIR_EQ_LISTING_URL);
 const dirRsListingCmd = () => ldsCmd(V1_DIR_RS_LISTING_URL);
 
-const V1_DIR_LISTING_CACHE = "/Users/davidvezzani/clients/v1-eq/be/data/v1-dir-listing.json";
-const V1_MEMBER_DETAILS_CACHE = "/Users/davidvezzani/clients/v1-eq/be/data/v1-member-details.json";
-const V1_DIR_EQ_LISTING_CACHE = "/Users/davidvezzani/clients/v1-eq/be/data/v1-dir-eq-listing.json";
-const V1_DIR_RS_LISTING_CACHE = "/Users/davidvezzani/clients/v1-eq/be/data/v1-dir-rs-listing.json";
-const CMD_CACHE = "/Users/davidvezzani/clients/v1-eq/be/data/cmd.txt";
+const V1_DIR_LISTING_CACHE = "/Users/davidvezzani/projects/v1-eq/be/data/v1-dir-listing.json";
+const V1_MEMBER_DETAILS_CACHE = "/Users/davidvezzani/projects/v1-eq/be/data/v1-member-details.json";
+const V1_DIR_EQ_LISTING_CACHE = "/Users/davidvezzani/projects/v1-eq/be/data/v1-dir-eq-listing.json";
+const V1_DIR_RS_LISTING_CACHE = "/Users/davidvezzani/projects/v1-eq/be/data/v1-dir-rs-listing.json";
+const CMD_CACHE = "/Users/davidvezzani/projects/v1-eq/be/data/cmd.txt";
 
 export const indexMembers = (req, res, next) => {
 	member.all(req.query, (err, members) => {
@@ -156,7 +156,7 @@ const persistToDatabase = (data, callback) => {
 		...(data.rsDetails[0].members.map(fields => ({...fields, group: 'rs'})))
 	];
 
-	// const stream = fs.createWriteStream('/Users/davidvezzani/clients/v1-eq/be/data/asdf.json'); // {flags:'a'}
+	// const stream = fs.createWriteStream('/Users/davidvezzani/projects/v1-eq/be/data/asdf.json'); // {flags:'a'}
 	// stream.write(JSON.stringify(allAdults));
 	// stream.end();
 	

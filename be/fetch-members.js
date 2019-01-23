@@ -3,7 +3,7 @@ import fs from 'fs';
 import btoa from 'btoa';
 // import { createNotes } from '../src/fetch';
 
-const CURL_COMMAND_FILE = '/Users/davidvezzani/clients/v1-eq/be/lds-cookie.txt'
+const CURL_COMMAND_FILE = '/Users/davidvezzani/projects/v1-eq/be/lds-cookie.txt'
 const state = {curlCommand: null, 
   ward: {initialFetchDone: false, importDone: false, archiveDone: false, updatedContactInfoDone: false, fetchPhotoFileTarget: 3, fetchPhotoFileCnt: 0, memberInfos: [], }, 
   eq:   {initialFetchDone: false, importDone: false, archiveDone: false, updatedContactInfoDone: false, fetchPhotoFileTarget: 3, fetchPhotoFileCnt: 0, memberInfos: [], memberInfo: null, memberPhotos: [], memberPhoto: null, }, 

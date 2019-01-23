@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import moment from 'moment';
-// const DEFAULT_OUTPUT_CACHE_PATH = "/Users/davidvezzani/clients/v1-eq/be/data/default-output.txt";
+// const DEFAULT_OUTPUT_CACHE_PATH = "/Users/davidvezzani/projects/v1-eq/be/data/default-output.txt";
 
 const shellCommand = (cmd64, cachedOutputPath, callback) => {
   console.log(`Refreshing cache: ${cachedOutputPath}`);

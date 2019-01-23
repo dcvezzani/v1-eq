@@ -324,7 +324,7 @@ function updateDoc2(auth, data, callback) {
 // todo: getting Error 413 (Request Entity Too Large)!!  Need to find an alternate method of updating docs in google docs (non-Google Doc)
 // setTimeout(() => {
 // // 1g0udN3Zb05FoW8ZIL3aob2Wy7ZXEVwnI
-// updateDbBackup({id: '1wK1IPldmrtdI3w-tjnJSLRKPP4QIzyeJ', filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
+// updateDbBackup({id: '1wK1IPldmrtdI3w-tjnJSLRKPP4QIzyeJ', filename: '/Users/davidvezzani/projects/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
 //   console.log(">>>updateDbBackup", {err, res})
 // })
 // }, 2000);
@@ -337,8 +337,8 @@ function updateDoc2(auth, data, callback) {
 // }, 2000);
 
 // setTimeout(() => {
-// // uploadDbBackup({filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
-// uploadDbBackup({filename: '/Users/davidvezzani/clients/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
+// // uploadDbBackup({filename: '/Users/davidvezzani/projects/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
+// uploadDbBackup({filename: '/Users/davidvezzani/projects/v1-eq/be/dev.sqlite3.sql.enc'}, (err, res) => {
 //   console.log(">>>uploadDbBackup", {err, res})
 // })
 // }, 2000);
