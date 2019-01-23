@@ -11,11 +11,17 @@ import Yearbook from '@/components/members/Yearbook'
 import Chairs from '@/components/members/Chairs'
 import FamilyVisits from '@/components/members/FamilyVisits'
 import WardMembers from '@/components/members/WardMembers'
+import Districts from '@/components/members/Districts'
 
 Vue.use(Router)
 
 export default new Router({
   routes: [
+    {
+      path: '/Districts',
+      name: 'Districts',
+      component: Districts
+    }, 
     {
       path: '/VisitAppointments',
       name: 'VisitAppointments',

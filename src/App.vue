@@ -16,7 +16,8 @@
         <router-link to="/Chairs">Chairs</router-link>
       </div>
       <div class="router-links">
-        <router-link to="/WardMembers">WardMembers</router-link>
+        <router-link to="/WardMembers">WardMembers</router-link> | 
+        <router-link to="/Districts">Districts</router-link>
       </div>
     </div>
 
