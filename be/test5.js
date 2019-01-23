@@ -86,50 +86,180 @@ const headerRow = () => {
   })
 }
 
+/*
+
+const districtNames = ['hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods'];
+
+
+const filterNames = ['hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods']
+let res = filterNames.map(name => {
+  const districtFilter = `
+    '${name}': (cb) => {
+      const tagName = '${name}';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },`
+  return districtFilter
+})
+console.log(res.join(''))
+
+
+let res = filterNames.map((name, idx) => {
+const addSheet = `
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": ${1010 + idx}, 
+              "title": "${name}",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        },`
+  return addSheet
+})
+console.log(res.join(''))
+
+
+let res = filterNames.map((name, idx) => {
+const updateCells = `
+        {
+          "updateCells": {
+            "rows": [
+              {"values": headerRow() }, 
+              dataRows['${name}'],
+            ], 
+            "fields": "userEnteredValue", 
+            "start": {
+              "sheetId": ${1010 + idx}, 
+              "rowIndex": 0, 
+              "columnIndex": 0, 
+            }
+          }
+        },`
+  return addSheet
+})
+console.log(res.join(''))
+
+*/
+
 const fetchDataRows = (callback) => {
 
   const dataRows = {};
   async.series({
-    eastlake: (cb) => {
-      const tagName = 'eastlake';
+
+    'hackberry': (cb) => {
+      const tagName = 'hackberry';
       WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
         if (err) callback("Unable to fetch ward members", {err});
         dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
         cb(err, {name: tagName, cnt: rows.length});
       })
-    }, 
-    meadows: (cb) => {
-      const tagName = 'meadows';
+    },
+    'serrata': (cb) => {
+      const tagName = 'serrata';
       WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
         if (err) callback("Unable to fetch ward members", {err});
         dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
         cb(err, {name: tagName, cnt: rows.length});
       })
-    }, 
-    alloy: (cb) => {
-      const tagName = 'alloy';
+    },
+    'samara': (cb) => {
+      const tagName = 'samara';
       WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
         if (err) callback("Unable to fetch ward members", {err});
         dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
         cb(err, {name: tagName, cnt: rows.length});
       })
-    }, 
-    holdaway: (cb) => {
-      const tagName = 'holdaway';
+    },
+    'syracuse': (cb) => {
+      const tagName = 'syracuse';
       WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
         if (err) callback("Unable to fetch ward members", {err});
         dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
         cb(err, {name: tagName, cnt: rows.length});
       })
-    }, 
-    other: (cb) => {
-      const tagName = 'other-neighborhoods';
+    },
+    'sterling-loop': (cb) => {
+      const tagName = 'sterling-loop';
       WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
         if (err) callback("Unable to fetch ward members", {err});
-        dataRows['other'] = rows.map(row => ({"values": dataRow(row) }))
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
         cb(err, {name: tagName, cnt: rows.length});
       })
-    }, 
+    },
+    'dry-creek': (cb) => {
+      const tagName = 'dry-creek';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },
+    'silver-oak': (cb) => {
+      const tagName = 'silver-oak';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },
+    'quivira': (cb) => {
+      const tagName = 'quivira';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },
+    'alloy-m': (cb) => {
+      const tagName = 'alloy-m';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },
+    'alloy-n': (cb) => {
+      const tagName = 'alloy-n';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },
+    'alloy-p': (cb) => {
+      const tagName = 'alloy-p';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },
+    'alloy-q': (cb) => {
+      const tagName = 'alloy-q';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },
+    'other': (cb) => {
+      const tagName = 'other';
+      WardMember.allNotArchivedWithTag(tagName, (err, rows) => {
+        if (err) callback("Unable to fetch ward members", {err});
+        dataRows[tagName] = rows.map(row => ({"values": dataRow(row) }))
+        cb(err, {name: tagName, cnt: rows.length});
+      })
+    },
 
   }, 
   (err, res) => {
@@ -238,15 +368,15 @@ function update(authClient, dataRows, callback) {
               "tabColor": {
                 "blue": 0
               },
-              "sheetId": 1000, 
-              "title": "Eastlake",
+              "sheetId": 1010, 
+              "title": "hackberry",
               "gridProperties": {
                 "columnCount": 10,
                 "frozenRowCount": 1
               }, 
             },
           }
-        }, 
+        },
         {
           "deleteSheet": {
             "sheetId": 1004, 
@@ -258,175 +388,381 @@ function update(authClient, dataRows, callback) {
               "tabColor": {
                 "blue": 0
               },
-              "sheetId": 1001, 
-              "title": "Meadows",
+              "sheetId": 1011, 
+              "title": "serrata",
               "gridProperties": {
                 "columnCount": 10,
                 "frozenRowCount": 1
               }, 
             },
           }
-        }, 
+        },
         {
           "addSheet": {
             "properties": {
               "tabColor": {
                 "blue": 0
               },
-              "sheetId": 1002, 
-              "title": "Alloy",
+              "sheetId": 1012, 
+              "title": "samara",
               "gridProperties": {
                 "columnCount": 10,
                 "frozenRowCount": 1
               }, 
             },
           }
-        }, 
+        },
         {
           "addSheet": {
             "properties": {
               "tabColor": {
                 "blue": 0
               },
-              "sheetId": 1003, 
-              "title": "Holdaway",
+              "sheetId": 1013, 
+              "title": "syracuse",
               "gridProperties": {
                 "columnCount": 10,
                 "frozenRowCount": 1
               }, 
             },
           }
-        }, 
+        },
         {
           "addSheet": {
             "properties": {
               "tabColor": {
                 "blue": 0
               },
-              "sheetId": 1004, 
-              "title": "Other",
+              "sheetId": 1014, 
+              "title": "sterling-loop",
               "gridProperties": {
                 "columnCount": 10,
                 "frozenRowCount": 1
               }, 
             },
           }
-        }, 
+        },
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": 1015, 
+              "title": "dry-creek",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        },
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": 1016, 
+              "title": "silver-oak",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        },
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": 1017, 
+              "title": "quivira",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        },
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": 1018, 
+              "title": "alloy-m",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        },
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": 1019, 
+              "title": "alloy-n",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        },
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": 1020, 
+              "title": "alloy-p",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        },
+        {
+          "addSheet": {
+            "properties": {
+              "tabColor": {
+                "blue": 0
+              },
+              "sheetId": 1021, 
+              "title": "alloy-q",
+              "gridProperties": {
+                "columnCount": 10,
+                "frozenRowCount": 1
+              }, 
+            },
+          }
+        },
+
+
         {
           "updateCells": {
             "rows": [
               {"values": headerRow() }, 
-              dataRows.eastlake,
+              dataRows['hackberry'],
             ], 
             "fields": "userEnteredValue", 
             "start": {
-              "sheetId": 1000, 
+              "sheetId": 1010, 
               "rowIndex": 0, 
               "columnIndex": 0, 
             }
           }
-        }, 
+        },
         {
           "updateCells": {
             "rows": [
               {"values": headerRow() }, 
-              dataRows.meadows,
+              dataRows['serrata'],
             ], 
             "fields": "userEnteredValue", 
             "start": {
-              "sheetId": 1001, 
+              "sheetId": 1011, 
               "rowIndex": 0, 
               "columnIndex": 0, 
             }
           }
-        }, 
+        },
         {
           "updateCells": {
             "rows": [
               {"values": headerRow() }, 
-              dataRows.alloy,
+              dataRows['samara'],
             ], 
             "fields": "userEnteredValue", 
             "start": {
-              "sheetId": 1002, 
+              "sheetId": 1012, 
               "rowIndex": 0, 
               "columnIndex": 0, 
             }
           }
-        }, 
+        },
         {
           "updateCells": {
             "rows": [
               {"values": headerRow() }, 
-              dataRows.holdaway,
+              dataRows['syracuse'],
             ], 
             "fields": "userEnteredValue", 
             "start": {
-              "sheetId": 1003, 
+              "sheetId": 1013, 
               "rowIndex": 0, 
               "columnIndex": 0, 
             }
           }
-        }, 
+        },
         {
           "updateCells": {
             "rows": [
               {"values": headerRow() }, 
-              dataRows.other,
+              dataRows['sterling-loop'],
             ], 
             "fields": "userEnteredValue", 
             "start": {
-              "sheetId": 1004, 
+              "sheetId": 1014, 
               "rowIndex": 0, 
               "columnIndex": 0, 
             }
           }
-        }, 
+        },
         {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1000, 
-              "index": 1,
-            },
-            "fields": "sheetId,index"
+          "updateCells": {
+            "rows": [
+              {"values": headerRow() }, 
+              dataRows['dry-creek'],
+            ], 
+            "fields": "userEnteredValue", 
+            "start": {
+              "sheetId": 1015, 
+              "rowIndex": 0, 
+              "columnIndex": 0, 
+            }
           }
-        }, 
+        },
         {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1001, 
-              "index": 2,
-            },
-            "fields": "sheetId,index"
+          "updateCells": {
+            "rows": [
+              {"values": headerRow() }, 
+              dataRows['silver-oak'],
+            ], 
+            "fields": "userEnteredValue", 
+            "start": {
+              "sheetId": 1016, 
+              "rowIndex": 0, 
+              "columnIndex": 0, 
+            }
           }
-        }, 
+        },
         {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1002, 
-              "index": 3,
-            },
-            "fields": "sheetId,index"
+          "updateCells": {
+            "rows": [
+              {"values": headerRow() }, 
+              dataRows['quivira'],
+            ], 
+            "fields": "userEnteredValue", 
+            "start": {
+              "sheetId": 1017, 
+              "rowIndex": 0, 
+              "columnIndex": 0, 
+            }
           }
-        }, 
+        },
         {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1003, 
-              "index": 4,
-            },
-            "fields": "sheetId,index"
+          "updateCells": {
+            "rows": [
+              {"values": headerRow() }, 
+              dataRows['alloy-m'],
+            ], 
+            "fields": "userEnteredValue", 
+            "start": {
+              "sheetId": 1018, 
+              "rowIndex": 0, 
+              "columnIndex": 0, 
+            }
           }
-        }, 
+        },
         {
-          "updateSheetProperties": {
-            "properties": {
-              "sheetId": 1004, 
-              "index": 5,
-            },
-            "fields": "sheetId,index"
+          "updateCells": {
+            "rows": [
+              {"values": headerRow() }, 
+              dataRows['alloy-n'],
+            ], 
+            "fields": "userEnteredValue", 
+            "start": {
+              "sheetId": 1019, 
+              "rowIndex": 0, 
+              "columnIndex": 0, 
+            }
           }
-        }, 
+        },
+        {
+          "updateCells": {
+            "rows": [
+              {"values": headerRow() }, 
+              dataRows['alloy-p'],
+            ], 
+            "fields": "userEnteredValue", 
+            "start": {
+              "sheetId": 1020, 
+              "rowIndex": 0, 
+              "columnIndex": 0, 
+            }
+          }
+        },
+        {
+          "updateCells": {
+            "rows": [
+              {"values": headerRow() }, 
+              dataRows['alloy-q'],
+            ], 
+            "fields": "userEnteredValue", 
+            "start": {
+              "sheetId": 1021, 
+              "rowIndex": 0, 
+              "columnIndex": 0, 
+            }
+          }
+        },
+
+        // {
+        //   "updateSheetProperties": {
+        //     "properties": {
+        //       "sheetId": 1000, 
+        //       "index": 1,
+        //     },
+        //     "fields": "sheetId,index"
+        //   }
+        // }, 
+        // {
+        //   "updateSheetProperties": {
+        //     "properties": {
+        //       "sheetId": 1001, 
+        //       "index": 2,
+        //     },
+        //     "fields": "sheetId,index"
+        //   }
+        // }, 
+        // {
+        //   "updateSheetProperties": {
+        //     "properties": {
+        //       "sheetId": 1002, 
+        //       "index": 3,
+        //     },
+        //     "fields": "sheetId,index"
+        //   }
+        // }, 
+        // {
+        //   "updateSheetProperties": {
+        //     "properties": {
+        //       "sheetId": 1003, 
+        //       "index": 4,
+        //     },
+        //     "fields": "sheetId,index"
+        //   }
+        // }, 
+        // {
+        //   "updateSheetProperties": {
+        //     "properties": {
+        //       "sheetId": 1004, 
+        //       "index": 5,
+        //     },
+        //     "fields": "sheetId,index"
+        //   }
+        // }, 
       ]
     },
 
