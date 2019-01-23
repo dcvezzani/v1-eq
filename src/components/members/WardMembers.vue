@@ -232,7 +232,7 @@ export default {
       this.checkedLists = {};
 		},
     importMembers: function() {
-			this.$socket.emit('db:wardMembers:import', {members: this.newRecords, offices: this.offices});
+			this.$socket.emit('db:wardMembers:import', {members: this.newRecords.slice(0,5), offices: []});
     }, 
     archiveMembers: function() {
 			this.$socket.emit('db:wardMembers:archive', {memberIds: this.removedIds});
