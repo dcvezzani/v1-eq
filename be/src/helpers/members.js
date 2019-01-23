@@ -38,11 +38,18 @@ export const fetchMemberSyncReport = (data, callback) => {
     if (err) return callback(err);
 
     const dbIds = rows.map(row => row.id);
-    const ldsData = JSON.parse(data.stdout);
-    const ldsIds = ldsData[0].members.map(member => member.id);
+    let removedIds = [];
+    let newRecords = [];
 
-    const removedIds = dbIds.filter(item => !ldsIds.includes(item)) || [];
-    const newRecords = ldsData[0].members.filter(item => !dbIds.includes(item.id)) || [];
+    try {
+      const ldsData = JSON.parse(data.stdout);
+      const ldsIds = ldsData[0].members.map(member => member.id);
+
+      removedIds = dbIds.filter(item => !ldsIds.includes(item)) || [];
+      newRecords = ldsData[0].members.filter(item => !dbIds.includes(item.id)) || [];
+    } catch (err) {
+      console.error(err);
+    }
 
     callback(err, {responsePayload: { ...data, removedIds, newRecords }});
   });

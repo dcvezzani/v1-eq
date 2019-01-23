@@ -655,7 +655,7 @@ export default {
     });
   
 		this.$socket.emit('sendShellCommand:fetchMembers', {cmd: btoa(this.fetchCommand)});
-    this.allTags();
+    // this.allTags();
   },
   watch: {
   },
