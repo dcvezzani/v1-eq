@@ -22,12 +22,12 @@ const queries = {
     select m.id, m.coupleName name, replace(m.address, ' undefined', '') address, m.phone, m.email, t.name area from ward_members m
     join tag_associations ta on m.id = ta.association_id
     join tags t on t.id = ta.tag_id
-    where m.archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in (
+    where m.archived_at is null and t.name in (${districtNamesList}) and m.id not in (
       select m.id from ward_members m
       join tag_associations ta on m.id = ta.association_id
       join tags t on t.id = ta.tag_id
       join members e on m.id = e.id
-      where m.archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods')
+      where m.archived_at is null and t.name in (${districtNamesList})
     ) order by area
   )
   UNION ALL
@@ -36,7 +36,7 @@ const queries = {
     join tag_associations ta on m.id = ta.association_id
     join tags t on t.id = ta.tag_id
     join members e on m.id = e.id
-    where m.archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') order by area, age
+    where m.archived_at is null and t.name in (${districtNamesList}) order by area, age
   )
   `), 
 
@@ -50,7 +50,7 @@ UNION ALL
   select m.id, m.age age, t.name area, 1 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in (${districtNamesList}) and m.id in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') order by age
   `), 
   availableEldersByArea: db.raw(` 
-    select m.id, m.age age, t.name area, 0 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in (${districtNamesList}) and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') order by age
+    select m.id, m.age age, t.name area, 0 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') order by area, age
   `), 
 
   assignedFamiliesByArea: db.raw(` 
@@ -65,7 +65,7 @@ UNION ALL
     select t.name area, district_id || '-' || companionship_id assign_id, type, legacyCmisId from district_assignments da
     join tag_associations ta on da.legacyCmisId = ta.association_id
     join tags t on t.id = ta.tag_id
-    where createdAt in (select max(createdAt) from district_assignments) and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') 
+    where createdAt in (select max(createdAt) from district_assignments) and t.name in (${districtNamesList}) 
     UNION ALL
     select '' area, assign_id, type, legacyCmisId from (
       select district_id || '-' || companionship_id assign_id, da.name, type, legacyCmisId from district_assignments da
@@ -74,7 +74,7 @@ UNION ALL
       select district_id || '-' || companionship_id assign_id, da.name, type, legacyCmisId from district_assignments da
       join tag_associations ta on da.legacyCmisId = ta.association_id
       join tags t on t.id = ta.tag_id
-      where createdAt in (select max(createdAt) from district_assignments) and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods')
+      where createdAt in (select max(createdAt) from district_assignments) and t.name in (${districtNamesList})
     ) 
   ) order by assign_id, type desc, area desc
   `), 
@@ -87,7 +87,7 @@ UNION ALL
     select district_id || '-' || companionship_id assign_id, da.name, type, legacyCmisId from district_assignments da
     join tag_associations ta on da.legacyCmisId = ta.association_id
     join tags t on t.id = ta.tag_id
-    where createdAt in (select max(createdAt) from district_assignments) and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods')
+    where createdAt in (select max(createdAt) from district_assignments) and t.name in (${districtNamesList})
   )
   `), 
 
@@ -99,7 +99,10 @@ UNION ALL
   `), 
 }
 
-const assignments = {areas: {}, assign_id: {}}
+let assignments = {areas: {}, assign_id: {}}
+const availableEldersByArea = {}
+const availableFamiliesByArea = {}
+const available = {}
 const directory = {}
 
 const personDetails = (id) => {
@@ -156,7 +159,12 @@ async.series({
     .asCallback((err, rows) => {
       if (err) return cb({msg: 'Unable to fetch records', raw: err, query: queries.elders.toString()});
 
-      console.log("available ministering brothers", {err, rows: rows.length});
+      rows.forEach(row => {
+        if (!availableEldersByArea[row.area]) availableEldersByArea[row.area] = []
+        availableEldersByArea[row.area].push(row.id)
+      })
+      const details = Object.keys(availableEldersByArea).map(area => ({name: area, count: availableEldersByArea[area].length}) )
+      console.log("available ministering brothers", {err, rows: rows.length, details});
       cb(); 
     });
   }, 
@@ -175,7 +183,12 @@ async.series({
     .asCallback((err, rows) => {
       if (err) return cb({msg: 'Unable to fetch records', raw: err, query: queries.elders.toString()});
 
-      console.log("available families", {err, rows: rows.length});
+      rows.forEach(row => {
+        if (!availableFamiliesByArea[row.area]) availableFamiliesByArea[row.area] = []
+        availableFamiliesByArea[row.area].push(row.id)
+      })
+      const details = Object.keys(availableFamiliesByArea).map(area => ({name: area, count: availableFamiliesByArea[area].length}) )
+      console.log("available families", {err, rows: rows.length, details});
       cb(); 
     });
   }, 
@@ -207,27 +220,217 @@ async.series({
             const minister = assignments.assign_id[row.assign_id].ministers[0]
             if (!assignments.areas[minister.area][row.assign_id]) assignments.areas[minister.area][row.assign_id] = {ministers: [], families: []}
             assignments.areas[minister.area][row.assign_id].families.push({...personDetails(row.id), assign_id: row.assign_id})
+            assignments.assign_id[row.assign_id].families.push({...personDetails(row.id), assign_id: row.assign_id})
           }
           else {
-            if (!assignments.areas[row.area][row.assign_id]) assignments.areas[row.area][row.assign_id] = {ministers: [], families: []}
-            assignments.areas[row.area][row.assign_id].families.push({...personDetails(row.id), assign_id: row.assign_id})
+            if (!available[row.area]) available[row.area] = {ministers: [], families: []}
+            available[row.area].families.push({...personDetails(row.id), assign_id: row.assign_id})
+
+            // if (!assignments.areas[row.area][row.assign_id]) assignments.areas[row.area][row.assign_id] = {ministers: [], families: []}
+            // assignments.areas[row.area][row.assign_id].families.push({...personDetails(row.id), assign_id: row.assign_id})
           }
-          assignments.assign_id[row.assign_id].families.push({...personDetails(row.id), assign_id: row.assign_id})
         }
       });
 
       console.log("current assignments", {err, rows: rows.length, assignments: Object.keys(assignments.assign_id).length});
+      // console.log("available", {available});
       // console.log("current assignments", {err, rows: rows.length, assign_id: assignments.assign_id['3-6']});
+
+      // const ministerDetails = Object.keys(availableEldersByArea).map(area => ({name: area, count: availableEldersByArea[area].length}) )
+      // const familyDetails = Object.keys(availableFamiliesByArea).map(area => ({name: area, count: availableFamiliesByArea[area].length}) )
+      // console.log(">>>details", {ministerDetails, familyDetails})
+      
       cb(); 
     });
+  }, 
+  
+  completeCurrentAssignments: (cb) => { console.log("complete current assignments"); 
+    const newAssignments = {areas: {}}
+
+    if (assignments.areas['']) {
+      if (!availableEldersByArea['']) availableEldersByArea[''] = []
+      if (!availableFamiliesByArea['']) availableFamiliesByArea[''] = []
+
+      const assignIds = Object.keys(assignments.areas[''])
+      assignIds.forEach(assignId => {
+        const assign = assignments.areas[''][assignId]
+        // console.log(">>>assign", assign);
+        availableEldersByArea[''] = availableEldersByArea[''].concat(assign.ministers.map(m => m.id))
+        availableFamiliesByArea[''] = availableFamiliesByArea[''].concat(assign.families.map(f => f.id))
+      })
+    }
+    delete assignments.areas['']
+
+    const areaNames = Object.keys(assignments.areas)
+    areaNames.forEach(areaName => {
+      const area = assignments.areas[areaName];
+      const assignIds = Object.keys(area);
+      newAssignments.areas[areaName] = {}
+
+      assignIds.forEach(assignId => {
+        const assignment = assignments.areas[areaName][assignId];
+        newAssignments.areas[areaName][assignId] = {ministers: [...assignment.ministers], families: [...assignment.families]}
+
+        while (newAssignments.areas[areaName][assignId].ministers.length < 2 && availableEldersByArea[areaName].length > 0) {
+          const companionId = availableEldersByArea[areaName].shift()
+          newAssignments.areas[areaName][assignId].ministers.push({...personDetails(companionId), assign_id: assignId})
+        }
+
+        const ministerIds = newAssignments.areas[areaName][assignId].ministers.map(m => m.id)
+        let infLoopCnt = 0
+        let lastQueueLength = availableFamiliesByArea[areaName].length
+
+        while (newAssignments.areas[areaName][assignId].families.length < 2 && availableFamiliesByArea[areaName].length > 0 && infLoopCnt < 5) {
+          const familyId = availableFamiliesByArea[areaName].shift()
+
+          if (!ministerIds.includes(familyId)) {
+            newAssignments.areas[areaName][assignId].families.push({...personDetails(familyId), assign_id: assignId})
+          } else {
+            availableFamiliesByArea[areaName].push(familyId)
+          }
+
+          if (lastQueueLength === availableFamiliesByArea[areaName].length) infLoopCnt += 1
+          else infLoopCnt = 0
+
+          lastQueueLength = availableFamiliesByArea[areaName].length
+          
+        }
+      })
+    })
+
+    assignments = newAssignments
+    cb()
+  }, 
+  
+  createNewAssignments: (cb) => { console.log("create new assignments"); 
+    const newAssignments = {areas: {}}
+    const areaNames = Object.keys(availableEldersByArea)
+
+    areaNames.forEach(areaName => {
+
+      newAssignments.areas[areaName] = {}
+
+      if (!assignments.areas[areaName]) {
+        assignments.areas[areaName] = {}
+      }
+      else {
+        const area = assignments.areas[areaName];
+        const assignIds = Object.keys(area);
+        assignIds.forEach(assignId => {
+          const assignment = assignments.areas[areaName][assignId];
+          newAssignments.areas[areaName][assignId] = {ministers: [...assignment.ministers], families: [...assignment.families]}
+        })
+      }
+
+      let index = 1
+      // let lastAssignId = null
+      while (availableEldersByArea[areaName].length > 0) {
+        const assignId = `4-${index}`
+        newAssignments.areas[areaName][assignId] = {ministers: [], families: []}
+
+        const comp1Id = availableEldersByArea[areaName].shift()
+        const ministers = [{...personDetails(comp1Id), assign_id: assignId}]
+
+        if (availableEldersByArea[areaName].length > 0) {
+          const comp2Id = availableEldersByArea[areaName].shift()
+          ministers.push({...personDetails(comp2Id), assign_id: assignId})
+        }
+        // console.log(">>>areaName, assignId", {areaName, assignId})
+        newAssignments.areas[areaName][assignId].ministers = ministers
+
+        const ministerIds = newAssignments.areas[areaName][assignId].ministers.map(m => m.id)
+        let infLoopCnt = 0
+        let lastQueueLength = availableFamiliesByArea[areaName].length
+        
+        while (newAssignments.areas[areaName][assignId].families.length < 2 && availableFamiliesByArea[areaName].length > 0 && infLoopCnt < 5) {
+          const familyId = availableFamiliesByArea[areaName].shift()
+
+          // console.log(">>>familyId", familyId)
+          if (!ministerIds.includes(familyId)) {
+            newAssignments.areas[areaName][assignId].families.push({...personDetails(familyId), assign_id: assignId})
+          } else {
+            availableFamiliesByArea[areaName].push(familyId)
+          }
+
+          if (lastQueueLength === availableFamiliesByArea[areaName].length) infLoopCnt += 1
+          else infLoopCnt = 0
+
+          lastQueueLength = availableFamiliesByArea[areaName].length
+
+          // if (infLoopCnt > 4) {
+          //   console.log(">>>infLoopCnt", {areaName, lastAssignId})
+          //   let tmpMinisters = newAssignments.areas[areaName][lastAssignId].ministers
+          //   newAssignments.areas[areaName][lastAssignId].ministers = newAssignments.areas[areaName][assignId].ministers
+          //   newAssignments.areas[areaName][assignId].ministers = tmpMinisters
+          // }
+        }
+
+        // lastAssignId = assignId
+        index += 1
+      }
+    })
+
+    assignments = newAssignments
+    cb()
+  }, 
+  
+  distributeRemainingFamilies: (cb) => { console.log("distribute remaining families");
+    const areaNames = Object.keys(assignments.areas)
+    areaNames.forEach(areaName => {
+      const area = assignments.areas[areaName];
+      const assignIds = Object.keys(area);
+
+      assignIds.forEach(assignId => {
+        if (availableFamiliesByArea[areaName].length > 0) {
+          const assignment = assignments.areas[areaName][assignId];
+          const ministerIds = assignment.ministers.map(m => m.id)
+          const availableFamilyIds = availableFamiliesByArea[areaName].filter(id => !ministerIds.includes(id))
+
+          if (availableFamilyIds.length > 0) {
+            const availableFamilyId = availableFamilyIds[0]
+            availableFamiliesByArea[areaName] = availableFamiliesByArea[areaName].filter(id => id !== availableFamilyId)
+            assignments.areas[areaName][assignId].families.push({...personDetails(availableFamilyId), assign_id: assignId})
+          }
+        }
+      })
+    })
+    cb()
+  }, 
+  
+  checkAssignmentDetails: (cb) => { console.log("check assignment details"); 
+    const ministerDetails = Object.keys(availableEldersByArea).map(area => ({name: area, count: availableEldersByArea[area].length}) )
+    const familyDetails = Object.keys(availableFamiliesByArea).map(area => ({name: area, count: availableFamiliesByArea[area].length}) )
+    console.log(">>>details", {ministerDetails, familyDetails})
+    cb()
+  }, 
+  
+  remainingElders: (cb) => { console.log("remaining elders"); 
+    const areaNames = Object.keys(availableEldersByArea)
+    assignments.ministers = areaNames.reduce((obj, areaName) => {
+      const ministerIds = availableEldersByArea[areaName]
+      obj[areaName] = ministerIds.map(ministerId => personDetails(ministerId))
+      return obj
+    }, {})
+    cb()
+  }, 
+  
+  // todo - transform from ids to full object
+  remainingFamilies: (cb) => { console.log("remaining families"); 
+    const areaNames = Object.keys(availableFamiliesByArea)
+    assignments.families = areaNames.reduce((obj, areaName) => {
+      const familyIds = availableFamiliesByArea[areaName]
+      obj[areaName] = familyIds.map(familyId => personDetails(familyId))
+      return obj
+    }, {})
+    cb()
   }, 
 }, 
   (err) => {
   if (err) return console.log(err);
 
   fs.writeFile(`district-assignments-eq.json`, JSON.stringify({
-    ministers: {}, 
-    families: {}, 
+    ministers: {...assignments.ministers}, 
+    families: {...assignments.families}, 
     assignments: Object.keys(assignments.areas).reduce((coll, area) => {
       const areaAssignments = {}
       coll[area] = Object.values(assignments.areas[area])
