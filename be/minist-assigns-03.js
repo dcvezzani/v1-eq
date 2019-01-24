@@ -50,7 +50,12 @@ UNION ALL
   select m.id, m.age age, t.name area, 1 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in (${districtNamesList}) and m.id in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') order by age
   `), 
   availableEldersByArea: db.raw(` 
-    select m.id, m.age age, t.name area, 0 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') order by area, age
+    select m.id, m.age age, t.name area, 0 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') and m.id not in (
+      select m.id from members m
+      join tag_associations ta on ta.association_id = m.id
+      join tags t on ta.tag_id = t.id
+      where t.name in ('unavailable-ministers')
+    ) order by area, age
   `), 
 
   assignedFamiliesByArea: db.raw(` 
@@ -262,7 +267,7 @@ async.series({
 
         while (newAssignments.areas[areaName][assignId].ministers.length < 2 && availableEldersByArea[areaName].length > 0) {
           const companionId = availableEldersByArea[areaName].shift()
-          newAssignments.areas[areaName][assignId].ministers.push({...personDetails(companionId), assign_id: assignId})
+          newAssignments.areas[areaName][assignId].ministers.push({...personDetails(companionId), assign_id: assignId, added: true})
         }
 
         const ministerIds = newAssignments.areas[areaName][assignId].ministers.map(m => m.id)
@@ -273,7 +278,7 @@ async.series({
           const familyId = availableFamiliesByArea[areaName].shift()
 
           if (!ministerIds.includes(familyId)) {
-            newAssignments.areas[areaName][assignId].families.push({...personDetails(familyId), assign_id: assignId})
+            newAssignments.areas[areaName][assignId].families.push({...personDetails(familyId), assign_id: assignId, added: true})
           } else {
             availableFamiliesByArea[areaName].push(familyId)
           }
@@ -317,11 +322,11 @@ async.series({
         newAssignments.areas[areaName][assignId] = {ministers: [], families: []}
 
         const comp1Id = availableEldersByArea[areaName].shift()
-        const ministers = [{...personDetails(comp1Id), assign_id: assignId}]
+        const ministers = [{...personDetails(comp1Id), assign_id: assignId, added: true}]
 
         if (availableEldersByArea[areaName].length > 0) {
           const comp2Id = availableEldersByArea[areaName].shift()
-          ministers.push({...personDetails(comp2Id), assign_id: assignId})
+          ministers.push({...personDetails(comp2Id), assign_id: assignId, added: true})
         }
         newAssignments.areas[areaName][assignId].ministers = ministers
 
@@ -333,7 +338,7 @@ async.series({
           const familyId = availableFamiliesByArea[areaName].shift()
 
           if (!ministerIds.includes(familyId)) {
-            newAssignments.areas[areaName][assignId].families.push({...personDetails(familyId), assign_id: assignId})
+            newAssignments.areas[areaName][assignId].families.push({...personDetails(familyId), assign_id: assignId, added: true})
           } else {
             availableFamiliesByArea[areaName].push(familyId)
           }
@@ -367,7 +372,7 @@ async.series({
           if (availableFamilyIds.length > 0) {
             const availableFamilyId = availableFamilyIds[0]
             availableFamiliesByArea[areaName] = availableFamiliesByArea[areaName].filter(id => id !== availableFamilyId)
-            assignments.areas[areaName][assignId].families.push({...personDetails(availableFamilyId), assign_id: assignId})
+            assignments.areas[areaName][assignId].families.push({...personDetails(availableFamilyId), assign_id: assignId, added: true})
           }
         }
       })
