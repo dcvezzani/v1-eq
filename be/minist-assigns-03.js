@@ -199,7 +199,6 @@ async.series({
       if (err) return cb({msg: 'Unable to fetch records', raw: err, query: queries.elders.toString()});
 
       rows.forEach(row => {
-        // if (!assignments.areas[row.area]) assignments.areas[row.area] = {ministers: [], families: []}
         if (!assignments.areas[row.area]) assignments.areas[row.area] = {}
         if (!assignments.assign_id[row.assign_id]) assignments.assign_id[row.assign_id] = {ministers: [], families: []}
 
@@ -225,21 +224,12 @@ async.series({
           else {
             if (!available[row.area]) available[row.area] = {ministers: [], families: []}
             available[row.area].families.push({...personDetails(row.id), assign_id: row.assign_id})
-
-            // if (!assignments.areas[row.area][row.assign_id]) assignments.areas[row.area][row.assign_id] = {ministers: [], families: []}
-            // assignments.areas[row.area][row.assign_id].families.push({...personDetails(row.id), assign_id: row.assign_id})
           }
         }
       });
 
       console.log("current assignments", {err, rows: rows.length, assignments: Object.keys(assignments.assign_id).length});
-      // console.log("available", {available});
-      // console.log("current assignments", {err, rows: rows.length, assign_id: assignments.assign_id['3-6']});
-
-      // const ministerDetails = Object.keys(availableEldersByArea).map(area => ({name: area, count: availableEldersByArea[area].length}) )
-      // const familyDetails = Object.keys(availableFamiliesByArea).map(area => ({name: area, count: availableFamiliesByArea[area].length}) )
-      // console.log(">>>details", {ministerDetails, familyDetails})
-      
+      console.log("available", {available});
       cb(); 
     });
   }, 
@@ -254,7 +244,6 @@ async.series({
       const assignIds = Object.keys(assignments.areas[''])
       assignIds.forEach(assignId => {
         const assign = assignments.areas[''][assignId]
-        // console.log(">>>assign", assign);
         availableEldersByArea[''] = availableEldersByArea[''].concat(assign.ministers.map(m => m.id))
         availableFamiliesByArea[''] = availableFamiliesByArea[''].concat(assign.families.map(f => f.id))
       })
@@ -323,7 +312,6 @@ async.series({
       }
 
       let index = 1
-      // let lastAssignId = null
       while (availableEldersByArea[areaName].length > 0) {
         const assignId = `4-${index}`
         newAssignments.areas[areaName][assignId] = {ministers: [], families: []}
@@ -335,7 +323,6 @@ async.series({
           const comp2Id = availableEldersByArea[areaName].shift()
           ministers.push({...personDetails(comp2Id), assign_id: assignId})
         }
-        // console.log(">>>areaName, assignId", {areaName, assignId})
         newAssignments.areas[areaName][assignId].ministers = ministers
 
         const ministerIds = newAssignments.areas[areaName][assignId].ministers.map(m => m.id)
@@ -345,7 +332,6 @@ async.series({
         while (newAssignments.areas[areaName][assignId].families.length < 2 && availableFamiliesByArea[areaName].length > 0 && infLoopCnt < 5) {
           const familyId = availableFamiliesByArea[areaName].shift()
 
-          // console.log(">>>familyId", familyId)
           if (!ministerIds.includes(familyId)) {
             newAssignments.areas[areaName][assignId].families.push({...personDetails(familyId), assign_id: assignId})
           } else {
@@ -356,16 +342,8 @@ async.series({
           else infLoopCnt = 0
 
           lastQueueLength = availableFamiliesByArea[areaName].length
-
-          // if (infLoopCnt > 4) {
-          //   console.log(">>>infLoopCnt", {areaName, lastAssignId})
-          //   let tmpMinisters = newAssignments.areas[areaName][lastAssignId].ministers
-          //   newAssignments.areas[areaName][lastAssignId].ministers = newAssignments.areas[areaName][assignId].ministers
-          //   newAssignments.areas[areaName][assignId].ministers = tmpMinisters
-          // }
         }
 
-        // lastAssignId = assignId
         index += 1
       }
     })
@@ -414,7 +392,6 @@ async.series({
     cb()
   }, 
   
-  // todo - transform from ids to full object
   remainingFamilies: (cb) => { console.log("remaining families"); 
     const areaNames = Object.keys(availableFamiliesByArea)
     assignments.families = areaNames.reduce((obj, areaName) => {
@@ -440,7 +417,4 @@ async.series({
     if (err) return console.log(err)
     console.log("DONE");
   });
-
-  // console.log("DONE", JSON.stringify({ministers: {...lists.ministers}}));
-  // console.log("DONE");
 })
