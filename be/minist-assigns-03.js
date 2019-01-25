@@ -1,5 +1,7 @@
 /*
 /Users/davidvezzani/projects/v1-eq/be/minist-assigns-03.js
+
+node_modules/.bin/babel-node minist-assigns-03.js
 */
 
 import db from './db'
@@ -49,8 +51,9 @@ UNION ALL
   assignedEldersByArea: db.raw(` 
   select m.id, m.age age, t.name area, 1 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in (${districtNamesList}) and m.id in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') order by age
   `), 
+  // all elders who do now have any ministering assignment AND are not included in the 'unavailable-ministers' tag association
   availableEldersByArea: db.raw(` 
-    select m.id, m.age age, t.name area, 0 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') and m.id not in (
+    select m.id, m.age age, t.name area, 0 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in (${districtNamesList}) and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') and m.id not in (
       select m.id from members m
       join tag_associations ta on ta.association_id = m.id
       join tags t on ta.tag_id = t.id

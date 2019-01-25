@@ -151,8 +151,9 @@ console.log(res.join(''))
 
 */
 
-const fetchDataRows = (callback) => {
+const areas = ['hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods']
 
+const fetchDataRows = (callback) => {
   const dataRows = {};
   async.series({
 
@@ -336,433 +337,36 @@ db2.all(sql, [], (err, rows) => {
 });
  */
 
+
 function update(authClient, dataRows, callback) {
   console.log(">>>headerRow()", JSON.stringify(headerRow()));
+ 
+  
+  // const deleteSheetsOld = [...Array(4).keys()].map(idx => idx + 1000).map(idx => ( { "deleteSheet": { "sheetId": idx, } } ))
+  const deleteSheets = [...Array(areas.length - 1).keys()].map(idx => idx + 1010).map(idx => ( { "deleteSheet": { "sheetId": idx, } } ))
+  const deleteLastSheet = [{ "deleteSheet": { "sheetId": (1010 + areas.length-1), } }]
+  const addFirstSheet = [{ "addSheet": { "properties": { "tabColor": { "blue": 0 }, "sheetId": 1010, "title": areas[0], "gridProperties": { "columnCount": 10, "frozenRowCount": 1 }, }, } }]
+  const addSheets = areas.slice(1, areas.length).map((area, idx) => ({ "addSheet": { "properties": { "tabColor": { "blue": 0 }, "sheetId": (1011 + idx), "title": area, "gridProperties": { "columnCount": 10, "frozenRowCount": 1 }, }, } }))
+  const updateCells = areas.map((area, idx) => ( { "updateCells": { "rows": [ {"values": headerRow() }, dataRows[area], ], "fields": "userEnteredValue", "start": { "sheetId": (1010 + idx), "rowIndex": 0, "columnIndex": 0, } } } ))
+  const updateSheetProperties = areas.map((area, idx) => ( { "updateSheetProperties": { "properties": { "sheetId": (1010 + idx), "index": idx + 1, }, "fields": "sheetId,index" } } ))
+  
+  
+  
+//   console.log(">>>deleteSheets", deleteSheets)
+//   callback()
+// } 
+// function xupdate(authClient, dataRows, callback) {
+//   console.log(">>>headerRow()", JSON.stringify(headerRow()));
   var request = {
     spreadsheetId: SPREAD_SHEET_ID, 
     resource: {
       "requests": [
-        {
-          "deleteSheet": {
-            "sheetId": 1000, 
-          }
-        }, 
-        {
-          "deleteSheet": {
-            "sheetId": 1001, 
-          }
-        }, 
-        {
-          "deleteSheet": {
-            "sheetId": 1002, 
-          }
-        }, 
-        {
-          "deleteSheet": {
-            "sheetId": 1003, 
-          }
-        }, 
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1010, 
-              "title": "hackberry",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "deleteSheet": {
-            "sheetId": 1004, 
-          }
-        }, 
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1011, 
-              "title": "serrata",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1012, 
-              "title": "samara",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1013, 
-              "title": "syracuse",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1014, 
-              "title": "sterling-loop",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1015, 
-              "title": "dry-creek",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1016, 
-              "title": "silver-oak",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1017, 
-              "title": "quivira",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1018, 
-              "title": "alloy-m",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1019, 
-              "title": "alloy-n",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1020, 
-              "title": "alloy-p",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-        {
-          "addSheet": {
-            "properties": {
-              "tabColor": {
-                "blue": 0
-              },
-              "sheetId": 1021, 
-              "title": "alloy-q",
-              "gridProperties": {
-                "columnCount": 10,
-                "frozenRowCount": 1
-              }, 
-            },
-          }
-        },
-
-
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['hackberry'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1010, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['serrata'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1011, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['samara'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1012, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['syracuse'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1013, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['sterling-loop'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1014, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['dry-creek'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1015, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['silver-oak'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1016, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['quivira'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1017, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['alloy-m'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1018, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['alloy-n'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1019, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['alloy-p'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1020, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-        {
-          "updateCells": {
-            "rows": [
-              {"values": headerRow() }, 
-              dataRows['alloy-q'],
-            ], 
-            "fields": "userEnteredValue", 
-            "start": {
-              "sheetId": 1021, 
-              "rowIndex": 0, 
-              "columnIndex": 0, 
-            }
-          }
-        },
-
-        // {
-        //   "updateSheetProperties": {
-        //     "properties": {
-        //       "sheetId": 1000, 
-        //       "index": 1,
-        //     },
-        //     "fields": "sheetId,index"
-        //   }
-        // }, 
-        // {
-        //   "updateSheetProperties": {
-        //     "properties": {
-        //       "sheetId": 1001, 
-        //       "index": 2,
-        //     },
-        //     "fields": "sheetId,index"
-        //   }
-        // }, 
-        // {
-        //   "updateSheetProperties": {
-        //     "properties": {
-        //       "sheetId": 1002, 
-        //       "index": 3,
-        //     },
-        //     "fields": "sheetId,index"
-        //   }
-        // }, 
-        // {
-        //   "updateSheetProperties": {
-        //     "properties": {
-        //       "sheetId": 1003, 
-        //       "index": 4,
-        //     },
-        //     "fields": "sheetId,index"
-        //   }
-        // }, 
-        // {
-        //   "updateSheetProperties": {
-        //     "properties": {
-        //       "sheetId": 1004, 
-        //       "index": 5,
-        //     },
-        //     "fields": "sheetId,index"
-        //   }
-        // }, 
+        ...deleteSheets, 
+        ...addFirstSheet, 
+        ...deleteLastSheet, 
+        ...addSheets, 
+        ...updateCells, 
+        // ...updateSheetProperties, 
       ]
     },
 

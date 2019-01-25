@@ -4,9 +4,11 @@
       <h2>{{ title }}</h2>
       <div class="columns" v-for="(assignment, index) in assignments">
         <div :class="assignmentRow(index)">
+
           <ul>
-            <li v-for="person in assignment.ministers" :class="ministerStyle(person)">{{ person.name }} {{ person.assign_id }} <span class="age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
+            <li v-for="person in assignment.ministers" :class="ministerStyle(person)"> <i v-show="person.added" class="fas fa-plus-circle"></i>{{ person.name }} {{ person.assign_id }} <span class="age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
           </ul>
+
           <div v-if="remaining.ministers">
             <a @click="toggleRemainingMinistersState" v-show="index === assignments.length-1 && remainingMinistersState === 'closed' && remaining.ministers.length > 0" href="">Show Remaining</a>
             <a @click="toggleRemainingMinistersState" v-show="index === assignments.length-1 && remainingMinistersState === 'open' && remaining.ministers.length > 0" href="">Hide Remaining</a>
@@ -16,9 +18,11 @@
           </div>
         </div>
         <div :class="assignmentRow(index)">
+
           <ul>
-            <li v-for="person in assignment.families" :class="familyStyle(person)">{{ person.name }} {{ person.assign_id }} <span class="age" v-show="person.age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
+            <li v-for="person in assignment.families" :class="familyStyle(person)"> <i v-show="person.added" class="fas fa-plus-circle"></i>{{ person.name }} {{ person.assign_id }} <span class="age" v-show="person.age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
           </ul>
+
           <div v-if="remaining.families">
             <a @click="toggleRemainingFamiliesState" v-show="index === assignments.length-1 && remainingFamiliesState === 'closed' && remaining.families.length > 0" href="">Show Remaining</a>
             <a @click="toggleRemainingFamiliesState" v-show="index === assignments.length-1 && remainingFamiliesState === 'open' && remaining.families.length > 0" href="">Hide Remaining</a>
@@ -46,7 +50,7 @@ export default {
   }, 
   methods: {
     assignmentRow: function(index) {
-      return ['column', (index % 2 === 0) ? 'gray' : '']
+      return ['column', 'assignment', (index % 2 === 0) ? 'gray' : '']
     },
     ministerStyle: function(person) {
       return ['person', 'minister', person.added ? 'added' : '']
@@ -87,7 +91,20 @@ text-align: left;
 .district-assignments {
   width: 800px;
   margin: 0 auto;
+  margin-bottom: 4em;
 }
+
+.xassignment {
+  border-bottom: 1px solid black;
+}
+.columns {
+  border: 1px solid black;
+  border-bottom: none;
+}
+.columns:last-child {
+  border: 1px solid black;
+}
+
 .address {
   font-size: 8pt; 
 }
@@ -101,10 +118,10 @@ text-align: left;
 .person {
   margin-bottom: 5px;
 }
-.person.minister.added {
+.xperson.minister.added {
   background-color: yellow;
 }
-.person.family.added {
+.xperson.family.added {
   background-color: blue;
   color: white;
 }
@@ -118,5 +135,8 @@ h2 {
   font-size: 18pt;
   font-weight: bold;
   margin: 25px 0 10px 0;
+}
+.fas {
+  margin-right: 5px;
 }
 </style>
