@@ -25,7 +25,7 @@ fs.readFile('districts.json', (err, content) => {
       ;
   });
 
-  console.log(">>>res", JSON.stringify(res));
+  // console.log(">>>res", JSON.stringify(res));
 });
 
 const records = {districts: [], assignments: []};
@@ -63,19 +63,20 @@ fs.readFile('districts.json', (err, content) => {
 
           records["assignments"].push(ministers.concat(assignments))
           const data = ministers.concat(assignments).map(row => ({...row, district_id: store.districtId, companionship_id: (idx+1)}))
+          // console.log(">>>data", data)
           db.batchInsert('district_assignments', data, chunkSize)
           .asCallback((err, rows) => {
             if (err) return cb(err, rows)
-            if (idx === (district.companionships - 1)) cb(err, rows)
+            if (idx === (district.companionships.length - 1)) cb(err, rows)
           });
         })
       },
     }, 
     (err, res) => {
-      console.log("DONE creating district and associated assignments", err, res);
+      console.log("DONE >>>records", err, JSON.stringify(records));
+      // console.log("DONE creating district and associated assignments", err, res);
     });
   });
 
-  console.log(">>>records", JSON.stringify(records));
 });
 

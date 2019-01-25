@@ -20,8 +20,8 @@ const districtNamesList = districtNames.map(d => `'${d}'` ).join(', ');
 
 const queries = {
   directory: db.raw(` 
-  select id, '' age, name, address, phone, email, area from (
-    select m.id, m.coupleName name, replace(m.address, ' undefined', '') address, m.phone, m.email, t.name area from ward_members m
+  select id, '' age, name, hoh_name, address, phone, email, area from (
+    select m.id, m.coupleName name, headOfHouse_preferredName hoh_name, replace(m.address, ' undefined', '') address, m.phone, m.email, t.name area from ward_members m
     join tag_associations ta on m.id = ta.association_id
     join tags t on t.id = ta.tag_id
     where m.archived_at is null and t.name in (${districtNamesList}) and m.id not in (
@@ -33,8 +33,8 @@ const queries = {
     ) order by area
   )
   UNION ALL
-  select id, age, name, address, phone, email, area from (
-    select m.id, e.age age, m.coupleName name, replace(m.address, ' undefined', '') address, m.phone, m.email, t.name area from ward_members m
+  select id, age, name, hoh_name, address, phone, email, area from (
+    select m.id, e.age age, m.coupleName name, headOfHouse_preferredName hoh_name, replace(m.address, ' undefined', '') address, m.phone, m.email, t.name area from ward_members m
     join tag_associations ta on m.id = ta.association_id
     join tags t on t.id = ta.tag_id
     join members e on m.id = e.id
@@ -202,6 +202,7 @@ async.series({
   }, 
   
   currentAssignments: (cb) => { console.log("gather current assignments"); 
+
     queries.currentAssignments
     .asCallback((err, rows) => {
       if (err) return cb({msg: 'Unable to fetch records', raw: err, query: queries.elders.toString()});
@@ -301,10 +302,8 @@ async.series({
   
   createNewAssignments: (cb) => { console.log("create new assignments"); 
     const newAssignments = {areas: {}}
-    const areaNames = Object.keys(availableEldersByArea)
 
-    areaNames.forEach(areaName => {
-
+    districtNames.forEach(areaName => {
       newAssignments.areas[areaName] = {}
 
       if (!assignments.areas[areaName]) {
@@ -320,7 +319,7 @@ async.series({
       }
 
       let index = 1
-      while (availableEldersByArea[areaName].length > 0) {
+      while (availableEldersByArea[areaName] && availableEldersByArea[areaName].length > 0) {
         const assignId = `4-${index}`
         newAssignments.areas[areaName][assignId] = {ministers: [], families: []}
 

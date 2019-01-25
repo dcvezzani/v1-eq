@@ -6,7 +6,7 @@
         <div :class="assignmentRow(index)">
 
           <ul>
-            <li v-for="person in assignment.ministers" :class="ministerStyle(person)"> <i v-show="person.added" class="fas fa-plus-circle"></i>{{ person.name }} {{ person.assign_id }} <span class="age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
+            <li v-for="person in assignment.ministers" :class="ministerStyle(person)"> <i v-show="person.added" class="fas fa-plus-circle"></i>{{ individualName(person) }} <span v-show="showId">{{ person.assign_id }}</span> <span class="age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
           </ul>
 
           <div v-if="remaining.ministers">
@@ -20,7 +20,7 @@
         <div :class="assignmentRow(index)">
 
           <ul>
-            <li v-for="person in assignment.families" :class="familyStyle(person)"> <i v-show="person.added" class="fas fa-plus-circle"></i>{{ person.name }} {{ person.assign_id }} <span class="age" v-show="person.age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
+            <li v-for="person in assignment.families" :class="familyStyle(person)"> <i v-show="person.added" class="fas fa-plus-circle"></i>{{ person.name }} <span v-show="showId">{{ person.assign_id }}</span> <span class="age" v-show="person.age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
           </ul>
 
           <div v-if="remaining.families">
@@ -49,6 +49,9 @@ export default {
     }
   }, 
   methods: {
+    individualName: function(person) {
+      return (person.hoh_name && person.hoh_name.length > 0) ? person.hoh_name : person.name;
+    },
     assignmentRow: function(index) {
       return ['column', 'assignment', (index % 2 === 0) ? 'gray' : '']
     },
