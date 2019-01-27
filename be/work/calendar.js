@@ -9,11 +9,11 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = 'work/token.json';
+const TOKEN_PATH = 'token.json';
 
 // Load client secrets from a local file.
 // fs.readFile('../credentials-vineyard1.eq.json', (err, content) => {
-fs.readFile('work/credentials.json', (err, content) => {
+fs.readFile('credentials.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
   // Authorize a client with credentials, then call the Google Calendar API.
   // authorize(JSON.parse(content), listEvents);
@@ -78,8 +78,8 @@ function getAccessToken(oAuth2Client, callback) {
 function listEvents(auth) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
-    // calendarId: 'tp1m4uv0abqgn2u87a6lpa7an4@group.calendar.google.com', // proposed
-    calendarId: 't8rpargqt4m674v1afsv0riqug@group.calendar.google.com',
+    calendarId: 'tp1m4uv0abqgn2u87a6lpa7an4@group.calendar.google.com', // proposed
+    // calendarId: 't8rpargqt4m674v1afsv0riqug@group.calendar.google.com',
     timeMin: (new Date()).toISOString(),
     maxResults: 10,
     singleEvents: true,
@@ -105,11 +105,11 @@ function createEvent(auth) {
     'location': '800 Howard St., San Francisco, CA 94103',
     'description': 'EQ Presidency visit',
     'start': {
-      'dateTime': '2018-11-27T19:00:00',
+      'dateTime': '2019-01-27T19:00:00',
       'timeZone': 'America/Denver',
     },
     'end': {
-      'dateTime': '2018-11-27T19:30:00',
+      'dateTime': '2019-01-27T19:30:00',
       'timeZone': 'America/Denver',
     },
   };
@@ -137,9 +137,9 @@ function addEvent(auth) {
 //   ]
   
   const events = [
-"xxxxx, xxxxxxxxxxxxxxxxxxxx on 12/9/18 10:15AM for 10 minutes", 
-"yyyyyy, yyyyyyy on 12/9/18 10:25AM for 10 minutes", 
-"zzzzz, zzzzzz on 12/9/18 10:35AM for 10 minutes", 
+"FV, Smithson on 1/27/19 10:15AM for 10 minutes", 
+"FV, Mopine on 1/27/19 10:25AM for 10 minutes", 
+"FV, Baldo Dave on 1/27/19 10:35AM for 10 minutes", 
   ]
   
   let offset = 0;
@@ -160,4 +160,26 @@ function addEvent(auth) {
     offset += 2000;
   })
 }
+
+
+/*
+{
+  "end": {
+    "dateTime": "2019-01-27T19:30:00",
+    "timeZone": "America/Denver"
+  },
+  "start": {
+    "dateTime": "2019-01-27T19:00:00",
+    "timeZone": "America/Denver"
+  },
+  "attendees": [
+    {
+      "displayName": "David xxxxxxx",
+      "email": "xxxxxxxxx@gmail.com"
+    }
+  ],
+  "description": "Clouds are free. They just float around the sky all day and have fun. You can't have light without dark. You can't know happiness unless you've known sorrow. There it is. This is where you take out all your hostilities and frustrations. It's better than kicking the puppy dog around and all that so.\r\n\r\nJust think about these things in your mind and drop em' on canvas. Let all these things just sort of happen. Just relax and let it flow. That easy. All those little son of a guns. Do an almighty painting with us.\r\n\r\nThe man who does the best job is the one who is happy at his job. Get tough with it, get strong. Only eight colors that you need. Just take out whatever you don't want. It'll change your entire perspective.",
+  "summary": "FV, Smithson"
+}
+ */
 
