@@ -6,14 +6,14 @@
         <div :class="assignmentRow(index)">
 
           <ul>
-            <li v-for="person in assignment.ministers" :class="ministerStyle(person)"> <i v-show="person.added" class="fas fa-plus-circle"></i>{{ individualName(person) }} <span v-show="showId">{{ person.assign_id }}</span> <span class="age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
+            <li v-for="person in assignment.ministers" :class="ministerStyle(person)"> <i v-show="person.added" class="fas fa-plus-circle"></i>{{ individualName(person) }} <span v-show="showId">{{ person.assign_id }}</span> <span class="age" v-show="person.age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
           </ul>
 
           <div v-if="remaining.ministers">
             <a @click="toggleRemainingMinistersState" v-show="index === assignments.length-1 && remainingMinistersState === 'closed' && remaining.ministers.length > 0" href="">Show Remaining</a>
             <a @click="toggleRemainingMinistersState" v-show="index === assignments.length-1 && remainingMinistersState === 'open' && remaining.ministers.length > 0" href="">Hide Remaining</a>
             <ul class="remaining" v-show="index === assignments.length-1 && remainingMinistersState === 'open'">
-              <li v-for="person in remaining.ministers" :class="remainingStyle(person)">{{ person.name }} <span class="age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
+              <li v-for="person in remaining.ministers" :class="remainingStyle(person)">{{ person.name }} <span class="age" v-show="person.age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
             </ul>
           </div>
         </div>
@@ -27,7 +27,7 @@
             <a @click="toggleRemainingFamiliesState" v-show="index === assignments.length-1 && remainingFamiliesState === 'closed' && remaining.families.length > 0" href="">Show Remaining</a>
             <a @click="toggleRemainingFamiliesState" v-show="index === assignments.length-1 && remainingFamiliesState === 'open' && remaining.families.length > 0" href="">Hide Remaining</a>
             <ul class="remaining" v-show="index === assignments.length-1 && remainingFamiliesState === 'open'">
-              <li v-for="person in remaining.families" :class="remainingStyle(person)">{{ person.name }} <span class="age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
+              <li v-for="person in remaining.families" :class="remainingStyle(person)">{{ person.name }} <span class="age" v-show="person.age">({{ person.age }})</span> <div class="address">{{ person.address }}</div> <div class="member-id" v-show="showPhone">{{ person.phone }}</div> <div class="member-id" v-show="showEmail">{{ person.email }}</div> <div class="member-id" v-show="showId">{{ person.id }}</div> </li>
             </ul>
           </div>
         </div>

@@ -1,7 +1,8 @@
 <template>
   <div class="districts">
     <div class="content">
-      <h2>Proposed district changes</h2>
+      <h2 class="title"> Vineyard 1st Ward EQ proposed district changes </h2>
+      <p>As of {{currentDate}}</p>
       
       <ul class="overview">
         <li>attempts were made to group companions and families together by geographic location and age</li>
@@ -25,6 +26,7 @@
     <District title="District 3" :assignments="district_03"></District>
 
 */
+import moment from 'moment';
 
 import district_01 from '../../../be/district-01.json'
 import district_02 from '../../../be/district-02.json'
@@ -67,6 +69,9 @@ export default {
     districtNames: function(){
       return Object.keys(this.all_districts.assignments) //.map(a => a.replace(/-/g, '_'))
     },
+    currentDate: function() {
+			return moment().format('MMM DD, YYYY');
+		},
   },
   methods: {
     remainingAssignments: function(districtName){
