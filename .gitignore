@@ -21,3 +21,4 @@ be/*.sqlite3*
 token*.json
 credentials*.json
 data/
+be/gmail
