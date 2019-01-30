@@ -293,13 +293,14 @@ async.series({
         const assignment = assignments.areas[areaName][assignId];
         newAssignments.areas[areaName][assignId] = {ministers: [...assignment.ministers], families: [...assignment.families]}
 
-        while (newAssignments.areas[areaName][assignId].ministers.length < 2 && availableEldersByArea[areaName].length > 0) {
+        while (newAssignments.areas[areaName][assignId].ministers.length < 2 && availableEldersByArea[areaName] && availableEldersByArea[areaName].length > 0) {
           const companionId = availableEldersByArea[areaName].shift()
           newAssignments.areas[areaName][assignId].ministers.push({...personDetails(companionId), assign_id: assignId, added: true})
         }
 
         const ministerIds = newAssignments.areas[areaName][assignId].ministers.map(m => m.id)
         let infLoopCnt = 0
+        if (!availableFamiliesByArea[areaName]) availableFamiliesByArea[areaName] = []
         let lastQueueLength = availableFamiliesByArea[areaName].length
 
         while (newAssignments.areas[areaName][assignId].families.length < 2 && availableFamiliesByArea[areaName].length > 0 && infLoopCnt < 5) {

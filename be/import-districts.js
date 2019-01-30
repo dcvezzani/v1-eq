@@ -4,13 +4,16 @@ import _ from 'lodash';
 import fs from 'fs';
 import db from './db';
 
+const DISTRICT_NAMES = ['alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'silver-oak', 'sterling-loop', 'dry-creek', 'quivira', 'serrata', 'hackberry', 'samara']
+// const DISTRICT_NAMES = ['District 1', 'District 2', 'District 3']
+
 fs.readFile('districts.json', (err, content) => {
   if (err) return console.error("Unable to read file");
 
   const districts = JSON.parse(content);
   // console.log(">>>districts", districts);
 
-  const res = districts.filter(district => ["District 1", "District 2", "District 3"].includes(district.districtName)).map(district => {
+  const res = districts.filter(district => DISTRICT_NAMES.includes(district.districtName)).map(district => {
     console.log("district.districtName", district.districtName);
     
     return district.companionships.filter(comp => {
@@ -37,7 +40,7 @@ fs.readFile('districts.json', (err, content) => {
   const districts = JSON.parse(content);
   // console.log(">>>districts", districts);
 
-  districts.filter(district => ["District 1", "District 2", "District 3"].includes(district.districtName)).forEach(district => {
+  districts.filter(district => DISTRICT_NAMES.includes(district.districtName)).forEach(district => {
     console.log("district.districtName", district.districtName);
 
     const {districtName, districtUuid, supervisorName, supervisorPersonUuid} = district;
@@ -50,8 +53,10 @@ fs.readFile('districts.json', (err, content) => {
       //   .asCallback((err, rows) => cb(err, rows));
       // },
       fetchDistrict: (cb) => {
+        // db.raw([`select * from districts where name = ? and createdAt in (select max(createdAt) from districts)`, districtName])
         db('districts').select("*").where({name: districtName})
         .asCallback((err, rows) => {
+          console.log(">>>rows", districtName, rows)
           if (err) return cb(err, rows);
           store.districtId = rows[0].id
           cb(err, rows);
