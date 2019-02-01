@@ -53,7 +53,7 @@ UNION ALL
   `), 
   // all elders who do now have any ministering assignment AND are not included in the 'unavailable-ministers' tag association
   availableEldersByArea: db.raw(` 
-    select m.id, m.age age, t.name area, 0 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') and m.id not in (
+    select m.id, m.age age, t.name area, 0 alreadyAssigned from members m inner join tag_associations ta inner join tags t on m.id = ta.association_id and ta.tag_id = t.id where archived_at is null and t.name in (${districtNamesList}) and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'minister') and m.id not in (
       select m.id from members m
       join tag_associations ta on ta.association_id = m.id
       join tags t on ta.tag_id = t.id
@@ -71,18 +71,18 @@ UNION ALL
     join tag_associations ta on m.id = ta.association_id
     join tags t on ta.tag_id = t.id 
     join members e on e.id = m.id 
-    where m.archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'assignment') 
+    where m.archived_at is null and t.name in (${districtNamesList}) and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'assignment') 
     UNION 
     select m.id, '' age, t.name area, 0 alreadyAssigned from ward_members m
     join tag_associations ta on m.id = ta.association_id
     join tags t on ta.tag_id = t.id 
-    where m.archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'assignment') 
+    where m.archived_at is null and t.name in (${districtNamesList}) and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'assignment') 
     EXCEPT
     select m.id, '' age, t.name area, 0 alreadyAssigned from ward_members m
     join tag_associations ta on m.id = ta.association_id
     join tags t on ta.tag_id = t.id 
     join members e on e.id = m.id 
-    where m.archived_at is null and t.name in ('hackberry', 'serrata', 'samara', 'syracuse', 'sterling-loop', 'dry-creek', 'silver-oak', 'quivira', 'alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'other-neighborhoods') and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'assignment') 
+    where m.archived_at is null and t.name in (${districtNamesList}) and m.id not in ( select legacyCmisId from district_assignments where createdAt in (select max(createdAt) from district_assignments) and type = 'assignment') 
     )
     where id not in (
       select m.id from members m
