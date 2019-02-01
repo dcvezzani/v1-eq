@@ -4,7 +4,7 @@ import _ from 'lodash';
 import fs from 'fs';
 import db from './db';
 
-const DISTRICT_NAMES = ['alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'silver-oak', 'sterling-loop', 'dry-creek', 'quivira', 'serrata', 'hackberry', 'samara']
+const DISTRICT_NAMES = ['alloy-m', 'alloy-n', 'alloy-p', 'alloy-q', 'silver-oak', 'sterling-loop', 'dry-creek', 'quivira', 'serrata', 'hackberry', 'samara', 'syracuse']
 // const DISTRICT_NAMES = ['District 1', 'District 2', 'District 3']
 
 fs.readFile('districts.json', (err, content) => {
