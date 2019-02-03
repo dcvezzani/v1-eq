@@ -121,6 +121,7 @@ authorize(function(authClient) {
   fetchDataRows((err, dataRows) => {
     update(authClient, dataRows, (err, res) => {
       console.log("DONE");
+      process.exit();
     });
   });
 });

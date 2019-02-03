@@ -448,5 +448,6 @@ async.series({
   }), (err) => {
     if (err) return console.log(err)
     console.log("DONE");
+    process.exit();
   });
 })

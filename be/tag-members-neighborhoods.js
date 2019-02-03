@@ -148,6 +148,7 @@ async.series({
 }, 
 (err, res) => {
   console.log("DONE", err, res);
+  process.exit();
 })
 
 /*

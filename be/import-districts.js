@@ -82,6 +82,7 @@ fs.readFile('districts.json', (err, content) => {
       // console.log("DONE creating district and associated assignments", err, res);
     });
   });
-
+  
+  process.exit();
 });
 
