@@ -14,7 +14,7 @@ fs.readFile('districts.json', (err, content) => {
   // console.log(">>>districts", districts);
 
   const res = districts.filter(district => DISTRICT_NAMES.includes(district.districtName)).map(district => {
-    console.log("district.districtName", district.districtName);
+    // console.log("district.districtName", district.districtName);
     
     return district.companionships.filter(comp => {
       const {ministers, assignments} = comp;
@@ -40,7 +40,9 @@ fs.readFile('districts.json', (err, content) => {
   const districts = JSON.parse(content);
   // console.log(">>>districts", districts);
 
-  districts.filter(district => DISTRICT_NAMES.includes(district.districtName)).forEach(district => {
+  const theDistricts = districts.filter(district => DISTRICT_NAMES.includes(district.districtName))
+
+  theDistricts.forEach((district, index) => {
     console.log("district.districtName", district.districtName);
 
     const {districtName, districtUuid, supervisorName, supervisorPersonUuid} = district;
@@ -78,11 +80,12 @@ fs.readFile('districts.json', (err, content) => {
       },
     }, 
     (err, res) => {
-      console.log("DONE >>>records", err, JSON.stringify(records));
+      console.log("DONE >>>records", index, theDistricts.length - 1, err, JSON.stringify(records).slice(0,50));
       // console.log("DONE creating district and associated assignments", err, res);
+      if (index >= theDistricts.length - 1) process.exit();
     });
+
   });
-  
-  process.exit();
+
 });
 

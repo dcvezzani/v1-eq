@@ -7,6 +7,8 @@ import async from 'async';
 import btoa from 'btoa';
 import readline from 'readline';
 
+const DB_ENABLED = false;
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -70,18 +72,19 @@ socket.on('joined', (msg) => {
           if (newRecords.length > 0) {
             const recordsSummary = newRecords.map(member => member.coupleName)
             console.log(`Found records to import for ${recordsSummary.join("; ")}`)
-            console.log(`Do you want to import ${newRecords.length} new records at this time? (y/N)`)
-            rl.on('line', function(line){
-              switch (line) {
+
+            rl.question(`Do you want to import ${newRecords.length} new records at this time? (y/N)`, (answer) => {
+              switch (answer) {
                 case 'y': 
                   console.log(`Importing ${newRecords.length} records...`)
-                  // socket.emit('db:wardMembers:import', {members: newRecords, offices: []});
+                  if (DB_ENABLED) socket.emit('db:wardMembers:import', {members: newRecords, offices: []});
                   break;
                 default: 
                   console.log("- User canceled action")
               }
               cb()
-            })
+            });
+            
           } else {
             console.log("No new records to import")
             cb()
@@ -92,18 +95,19 @@ socket.on('joined', (msg) => {
           if (removedIds.length > 0) {
             const recordsSummary = members.filter(member => removedIds.includes(member.id)).map(member => member.coupleName)
             console.log(`Found records to archive for ${recordsSummary.join(", ")}`)
-            console.log(`Do you want to archive ${removedIds.length} records at this time? (y/N)`)
-            rl.on('line', function(line){
-              switch (line) {
+
+            rl.question(`Do you want to archive ${removedIds.length} records at this time? (y/N)`, (answer) => {
+              switch (answer) {
                 case 'y': 
-                  console.log(`Importing ${removedIds.length} records...`)
-                  // socket.emit('db:wardMembers:archive', {memberIds: removedIds});
+                  console.log(`Archiving ${removedIds.length} records...`)
+                  if (DB_ENABLED) socket.emit('db:wardMembers:archive', {memberIds: removedIds});
                   break;
                 default: 
                   console.log("- User canceled action")
               }
               cb()
-            })
+            });
+            
           } else {
             console.log("No records to archive")
             cb()
